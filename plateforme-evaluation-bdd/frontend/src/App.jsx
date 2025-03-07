@@ -18,17 +18,16 @@ function App() {
     const isLoginPage = hideSidebarRoutes.includes(location.pathname);
 
     return (
-        <div className={`h-screen ${isLoginPage ? 'flex justify-center items-center' : 'flex bg-black text-gray-100 overflow-hidden'}`}>
+        <div className={`min-h-screen ${isLoginPage ? 'flex justify-center items-center' : 'flex bg-black text-gray-100'}`}>
             {/* Affiche le Sidebar sauf sur la page de connexion */}
             {!isLoginPage && <Sidebar />}
 
-            <div className="w-full">
+            <div className="w-full overflow-y-auto">
                 <Routes>
-                    
                     <Route path="/" element={<LoginPage />} />
-                    <Route path="/register" element={<Register/>} />
+                    <Route path="/register" element={<Register />} />
                     <Route path="/connected-accounts" element={<ConnectedAccounts />} />
-                    <Route path="/react-dashboard/" element={<Dashboard />} />
+                    <Route path="/react-dashboard" element={<Dashboard />} />
                     <Route path="/leads" element={<Leads />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/products" element={<ProductsPage />} />
@@ -40,6 +39,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;

@@ -1,30 +1,45 @@
-import { Route, Routes } from "react-router-dom";
-
+import { Route, Routes, useLocation } from "react-router-dom";
 import Sidebar from "./components/common/Sidebar";
-
 import Dashboard from "./pages/Dashboard";
 import ProductsPage from "./pages/ProductsPage";
 import Leads from "./pages/Leads";
 import SalesPage from "./pages/SalesPage";
 import OrdersPage from "./pages/OrdersPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import SettingsPage from "./pages/SettingsPage";
+import SettingsPage from "./pages/SettingsPage"; 
+import LoginPage from "./pages/LoginPage";
+import Register from "./pages/Register";
+import ConnectedAccounts from "./components/settings/ConnectedAccounts"; 
 
 function App() {
-	return (
-		<div className='flex h-screen bg-black text-gray-100 overflow-hidden'>
-			<Sidebar />
-			<Routes>
-				<Route path='/react' element={<Dashboard />} />
-				<Route path='/leads' element={<Leads />} />
-				<Route path='/analytics' element={<AnalyticsPage />} />
-				<Route path='/products' element={<ProductsPage />} />
-				<Route path='/reports' element={<SalesPage />} />
-				<Route path='/orders' element={<OrdersPage />} />
-				<Route path='/settings' element={<SettingsPage />} />
-			</Routes>
-		</div>
-	);
+    const location = useLocation();
+    const hideSidebarRoutes = ["/", "/register"]; // Liste des routes sans sidebar
+
+    const isLoginPage = hideSidebarRoutes.includes(location.pathname);
+
+    return (
+        <div className={`h-screen ${isLoginPage ? 'flex justify-center items-center' : 'flex bg-black text-gray-100 overflow-hidden'}`}>
+            {/* Affiche le Sidebar sauf sur la page de connexion */}
+            {!isLoginPage && <Sidebar />}
+
+            <div className="w-full">
+                <Routes>
+                    
+                    <Route path="/" element={<LoginPage />} />
+                    <Route path="/register" element={<Register/>} />
+                    <Route path="/connected-accounts" element={<ConnectedAccounts />} />
+                    <Route path="/react-dashboard/" element={<Dashboard />} />
+                    <Route path="/leads" element={<Leads />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/reports" element={<SalesPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                </Routes>
+            </div>
+        </div>
+    );
 }
+
 
 export default App;

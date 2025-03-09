@@ -1,9 +1,12 @@
-import { BarChart2, DollarSign, Menu, Settings, ShoppingBag, ShoppingCart, TrendingUp, Users } from "lucide-react";
+import { BarChart2, DollarSign, Menu, Settings, ShoppingBag, ShoppingCart, TrendingUp, Users, FileTextIcon } from "lucide-react";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
+//import { BarChart2, Users, TrendingUp, ShoppingBag, DollarSign, ShoppingCart, Settings, FileText } from 'lucide-react';
+
 
 const SIDEBAR_ITEMS = [
+	{ name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models" },
 	{ name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
 	{ name: "Leads", icon: Users, color: "#EC4899", href: "/leads" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },

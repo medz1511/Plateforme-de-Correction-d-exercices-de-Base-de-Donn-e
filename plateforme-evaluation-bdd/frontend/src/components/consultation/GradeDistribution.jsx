@@ -6,9 +6,9 @@ const GradeDistribution = ({ loading }) => {
     // Mock data - would come from API in real implementation
     const data = [
         { name: "Excellent (16-20)", value: 32, color: "#10B981" },
-        { name: "Good (12-16)", value: 45, color: "#6366F1" },
-        { name: "Average (8-12)", value: 18, color: "#F59E0B" },
-        { name: "Poor (0-8)", value: 5, color: "#EF4444" },
+        { name: "Bon (12-16)", value: 45, color: "#6366F1" },
+        { name: "Moyen (8-12)", value: 18, color: "#F59E0B" },
+        { name: "Faible (0-8)", value: 5, color: "#EF4444" },
     ];
 
     return (
@@ -19,7 +19,7 @@ const GradeDistribution = ({ loading }) => {
             transition={{ duration: 0.5, delay: 0.1 }}
         >
             <div className="px-6 py-4 border-b border-gray-700">
-                <h2 className="text-xl font-semibold text-white">Grade Distribution</h2>
+                <h2 className="text-xl font-semibold text-white">Répartition des notes</h2>
             </div>
 
             <div className="p-6 h-80">
@@ -44,7 +44,7 @@ const GradeDistribution = ({ loading }) => {
                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                 ))}
                             </Pie>
-                            <Tooltip formatter={(value) => `${value} submissions`} />
+                            <Tooltip formatter={(value) => `${value} soumissions`} />
                             <Legend verticalAlign="bottom" height={36} />
                         </PieChart>
                     </ResponsiveContainer>

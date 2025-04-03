@@ -13,6 +13,8 @@ import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
 import ConsultationNotes from "./pages/ConsultationNotes";
+import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
+import AjoutExercice from "./pages/AjoutExercice"
 
 function App() {
     const location = useLocation();
@@ -38,6 +40,10 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LoginPage />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/viewRapport" element={<ViewRapportEtudiant />} />
+                    <Route path="/ajoutExercice" element={<AjoutExercice />} />
+                    
+
                     <Route path="/connected-accounts" element={<ConnectedAccounts />} />
                     <Route path="/react-dashboard" element={<Dashboard />} />
                     <Route path="/leads" element={<Leads />} />

@@ -17,6 +17,7 @@ import NotesEtudiant from "./pages/NotesEtudiant";
 import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
 import AjoutExercice from "./pages/AjoutExercice";
+import Visualisation from "./pages/Dashboard-Etudiant";
 
 function App() {
     const location = useLocation();
@@ -56,6 +57,7 @@ function App() {
                     <Route path="/sujets-deposes" element={<AccesSujetsDeposesProf />} />
                     <Route path="/notes-etudiant" element={<NotesEtudiant />} />
                     <Route path="/consultation-notes" element={<ConsultationNotes />} />
+                    <Route path="/dahboard-etudiant" element={<Visualisation />} />
                 </Routes>
             </div>
         </div>

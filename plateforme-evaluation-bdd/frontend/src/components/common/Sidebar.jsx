@@ -2,12 +2,18 @@ import { BarChart2, DollarSign, Menu, Settings, ShoppingBag, ShoppingCart, Trend
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { FileText, ClipboardList, ClipboardCheck } from "lucide-react";
+import { FileText, ClipboardList, ClipboardCheck, FilePlus, Clipboard } from "lucide-react";
+//import { FilePlus, Clipboard } from 'lucide-react';
+
 
 const SIDEBAR_ITEMS = [
     { name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models" },
     { name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes" },
     { name: "Mes notes", icon: ClipboardCheck, color: "#10B981", href: "/notes-etudiant" },
+	{ name: "Nouveau Exercices", icon: FilePlus, color: "#F59E0B", href: "/ajoutExercice" },
+    { name: "Rapport Etudiant", icon: FileText, color: "#F59E0B", href: "/viewRapport" },
+    { name: "Consultation notes", icon: Clipboard, color: "#F59E0B", href: "/consultation-notes" },
+    { name: "Visualisation", icon: Clipboard, color: "#F59E0B", href: "/dahboard-etudiant" },
     { name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
     { name: "Leads", icon: Users, color: "#EC4899", href: "/leads" },
     { name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },

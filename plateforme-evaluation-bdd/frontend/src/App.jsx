@@ -12,9 +12,11 @@ import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
-//import ConsultationNotes from "./pages/ConsultationNotes";
 import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
 import NotesEtudiant from "./pages/NotesEtudiant";
+import ConsultationNotes from "./pages/ConsultationNotes";
+import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
+import AjoutExercice from "./pages/AjoutExercice";
 
 function App() {
     const location = useLocation();
@@ -40,6 +42,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LoginPage />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/viewRapport" element={<ViewRapportEtudiant />} />
+                    <Route path="/ajoutExercice" element={<AjoutExercice />} />
                     <Route path="/connected-accounts" element={<ConnectedAccounts />} />
                     <Route path="/react-dashboard" element={<Dashboard />} />
                     <Route path="/leads" element={<Leads />} />
@@ -49,9 +53,9 @@ function App() {
                     <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/correction-models" element={<CorrectionModelsPage />} />
-                    
                     <Route path="/sujets-deposes" element={<AccesSujetsDeposesProf />} />
                     <Route path="/notes-etudiant" element={<NotesEtudiant />} />
+                    <Route path="/consultation-notes" element={<ConsultationNotes />} />
                 </Routes>
             </div>
         </div>

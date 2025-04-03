@@ -56,7 +56,7 @@ const CorrectionModelsPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-6 w-full bg-gray-100"  // Fond gris clair
+            className="p-6 w-full bg-gray-200"  // Fond gris plus adapté à la page
         >
             <Header
                 title="Modèles de correction"
@@ -97,7 +97,7 @@ const CorrectionModelsPage = () => {
             {/* Main Content */}
             <div className="mt-8 grid grid-cols-1 gap-6">
                 {/* Tableau des modèles de correction existants */}
-                <div className="bg-gray-200 rounded-xl p-6">
+                <div className="bg-gray-300 rounded-xl p-6">
                     <h2 className="text-xl font-semibold mb-4">Modèles de correction par exercice</h2>
                     <CorrectionModelsTable
                         onSelectExercise={handleSelectExercise}

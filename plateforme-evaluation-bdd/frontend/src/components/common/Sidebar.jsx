@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 
 const SIDEBAR_ITEMS = [
 	{ name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models" },
+	{ name: "Consultation notes ", icon: ShoppingCart, color: "#F59E0B", href: "/consultation-notes" },
 	{ name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
 	{ name: "Leads", icon: Users, color: "#EC4899", href: "/leads" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },

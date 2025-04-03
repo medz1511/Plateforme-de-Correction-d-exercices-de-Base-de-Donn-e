@@ -15,8 +15,8 @@ const CorrectionModelsPage = () => {
         {
             name: "Total des modèles",
             value: "42",
-            icon: FileText,  // ✅ Correction ici (on enlève <FileText size={24} />)
-            color: "#4A90E2", // ✅ Ajout d'une couleur
+            icon: FileText,
+            color: "#4A90E2",
         },
         {
             name: "Exercices couverts",
@@ -72,10 +72,10 @@ const CorrectionModelsPage = () => {
                 {stats.map((stat, index) => (
                     <StatCard
                         key={index}
-                        name={stat.name}  // ✅ Correction ici (remplace title par name)
+                        name={stat.name}
                         value={stat.value}
-                        icon={stat.icon}  // ✅ Correction ici (on passe la fonction et non un élément JSX)
-                        color={stat.color} // ✅ Ajout de la couleur
+                        icon={stat.icon}
+                        color={stat.color}
                     />
                 ))}
             </div>

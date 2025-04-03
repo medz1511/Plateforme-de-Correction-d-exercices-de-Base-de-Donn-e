@@ -97,7 +97,7 @@ const CorrectionModelsPage = () => {
                     <div className="bg-gray-800 rounded-xl p-6 w-full max-w-3xl">
                         <h2 className="text-xl font-semibold mb-4">
                             {selectedExercise
-                                ? `Ajouter un modèle pour l'exercice: ${selectedExercise.title}`
+                                ? `Ajouter un modèle pour lexercice: ${selectedExercise.title}`
                                 : "Ajouter un nouveau modèle de correction"}
                         </h2>
                         <CorrectionModelForm

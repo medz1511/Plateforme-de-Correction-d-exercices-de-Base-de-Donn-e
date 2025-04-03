@@ -12,7 +12,6 @@ import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts"; 
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
-import ProfessorDashboard from "./pages/test";
 
 function App() {
     const location = useLocation();

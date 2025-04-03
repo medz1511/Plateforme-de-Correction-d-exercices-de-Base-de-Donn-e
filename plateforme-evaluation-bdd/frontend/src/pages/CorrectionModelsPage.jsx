@@ -9,7 +9,7 @@ import CorrectionModelsTable from "../components/correction/CorrectionModelsTabl
 const CorrectionModelsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedExercise, setSelectedExercise] = useState(null);
-    
+
     // ✅ Mise à jour des statistiques pour correspondre à StatCard
     const stats = [
         {
@@ -57,7 +57,7 @@ const CorrectionModelsPage = () => {
                 title="Modèles de correction"
                 description="Gérez les modèles de correction pour vos exercices"
                 actions={
-                    <button 
+                    <button
                         onClick={handleAddNewModel}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
                     >
@@ -85,7 +85,7 @@ const CorrectionModelsPage = () => {
                 {/* Tableau des modèles de correction existants */}
                 <div className="bg-gray-800 rounded-xl p-6">
                     <h2 className="text-xl font-semibold mb-4">Modèles de correction par exercice</h2>
-                    <CorrectionModelsTable 
+                    <CorrectionModelsTable
                         onSelectExercise={handleSelectExercise}
                     />
                 </div>
@@ -96,11 +96,11 @@ const CorrectionModelsPage = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-gray-800 rounded-xl p-6 w-full max-w-3xl">
                         <h2 className="text-xl font-semibold mb-4">
-                            {selectedExercise 
-                                ? `Ajouter un modèle pour l'exercice: ${selectedExercise.title}` 
+                            {selectedExercise
+                                ? `Ajouter un modèle pour l'exercice: ${selectedExercise.title}`
                                 : "Ajouter un nouveau modèle de correction"}
                         </h2>
-                        <CorrectionModelForm 
+                        <CorrectionModelForm
                             onClose={() => {
                                 setShowAddModal(false);
                                 setSelectedExercise(null);
@@ -115,3 +115,9 @@ const CorrectionModelsPage = () => {
 };
 
 export default CorrectionModelsPage;
+
+// simulation 1
+
+// simulation 2
+
+// simulation 3

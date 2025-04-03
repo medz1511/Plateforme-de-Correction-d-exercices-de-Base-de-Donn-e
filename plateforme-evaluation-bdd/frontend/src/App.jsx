@@ -47,7 +47,6 @@ function App() {
                     <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/correction-models" element={<CorrectionModelsPage />} />
-                    <Route path="/etudiant" element={<ProfessorDashboard />} />
                 </Routes>
             </div>
         </div>

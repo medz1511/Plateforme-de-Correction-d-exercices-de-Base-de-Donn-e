@@ -8,7 +8,6 @@ import CorrectionModelsTable from "../components/correction/CorrectionModelsTabl
 
 const CorrectionModelsPage = () => {
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showSubjectModal, setShowSubjectModal] = useState(false);  // Modal pour l'ajout de sujet
     const [selectedExercise, setSelectedExercise] = useState(null);
 
     // ✅ Mise à jour des statistiques pour correspondre à StatCard
@@ -43,10 +42,6 @@ const CorrectionModelsPage = () => {
         setShowAddModal(true);
     };
 
-    const handleAddNewSubject = () => {
-        setShowSubjectModal(true);  // Affiche le modal pour ajouter un sujet
-    };
-
     const handleSelectExercise = (exercise) => {
         setSelectedExercise(exercise);
     };
@@ -56,28 +51,19 @@ const CorrectionModelsPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-6 w-full bg-gray-100"  // Fond gris clair
+            className="p-6 w-full"
         >
             <Header
                 title="Modèles de correction"
                 description="Gérez les modèles de correction pour vos exercices"
                 actions={
-                    <>
-                        <button
-                            onClick={handleAddNewModel}
-                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                            <PlusCircle size={18} />
-                            Ajouter un modèle
-                        </button>
-                        <button
-                            onClick={handleAddNewSubject}
-                            className="ml-4 flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                            <FileText size={18} />
-                            Déposer un sujet
-                        </button>
-                    </>
+                    <button
+                        onClick={handleAddNewModel}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+                    >
+                        <PlusCircle size={18} />
+                        Ajouter un modèle
+                    </button>
                 }
             />
 
@@ -97,7 +83,7 @@ const CorrectionModelsPage = () => {
             {/* Main Content */}
             <div className="mt-8 grid grid-cols-1 gap-6">
                 {/* Tableau des modèles de correction existants */}
-                <div className="bg-gray-200 rounded-xl p-6">
+                <div className="bg-gray-800 rounded-xl p-6">
                     <h2 className="text-xl font-semibold mb-4">Modèles de correction par exercice</h2>
                     <CorrectionModelsTable
                         onSelectExercise={handleSelectExercise}
@@ -108,10 +94,10 @@ const CorrectionModelsPage = () => {
             {/* Modal pour ajouter un nouveau modèle de correction */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-gray-300 rounded-xl p-6 w-full max-w-3xl">
+                    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-3xl">
                         <h2 className="text-xl font-semibold mb-4">
                             {selectedExercise
-                                ? `Ajouter un modèle pour l'exercice: ${selectedExercise.title}`
+                                ? `Ajouter un modèle pour lexercice: ${selectedExercise.title}`
                                 : "Ajouter un nouveau modèle de correction"}
                         </h2>
                         <CorrectionModelForm
@@ -124,22 +110,14 @@ const CorrectionModelsPage = () => {
                     </div>
                 </div>
             )}
-
-            {/* Modal pour ajouter un nouveau sujet en PDF */}
-            {showSubjectModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-gray-300 rounded-xl p-6 w-full max-w-3xl">
-                        <h2 className="text-xl font-semibold mb-4">
-                            Déposer un sujet (au format PDF)
-                        </h2>
-                        <SubjectUploadForm
-                            onClose={() => setShowSubjectModal(false)}
-                        />
-                    </div>
-                </div>
-            )}
         </motion.div>
     );
 };
 
 export default CorrectionModelsPage;
+
+// simulation 1
+
+// simulation 2
+
+// simulation 3

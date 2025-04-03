@@ -3,10 +3,12 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "react-router-dom";
 //import { BarChart2, Users, TrendingUp, ShoppingBag, DollarSign, ShoppingCart, Settings, FileText } from 'lucide-react';
-
+import { FileText, ClipboardList, ClipboardCheck } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
-	{ name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models" },
+	{ name: "Modèles de correction", icon: FileText, color: "#6366f1", href: "/correction-models" },
+    {name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes" },
+    { name: "Mes notes", icon: ClipboardCheck, color: "#10B981", href: "/notes-etudiant" },
 	{ name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
 	{ name: "Leads", icon: Users, color: "#EC4899", href: "/leads" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },

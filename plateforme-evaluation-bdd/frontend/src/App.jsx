@@ -7,11 +7,14 @@ import Leads from "./pages/Leads";
 import SalesPage from "./pages/SalesPage";
 import OrdersPage from "./pages/OrdersPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
-import SettingsPage from "./pages/SettingsPage"; 
+import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
-import ConnectedAccounts from "./components/settings/ConnectedAccounts"; 
+import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
+//import ConsultationNotes from "./pages/ConsultationNotes";
+import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
+import NotesEtudiant from "./pages/NotesEtudiant";
 
 function App() {
     const location = useLocation();
@@ -46,6 +49,9 @@ function App() {
                     <Route path="/orders" element={<OrdersPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/correction-models" element={<CorrectionModelsPage />} />
+                    
+                    <Route path="/sujets-deposes" element={<AccesSujetsDeposesProf />} />
+                    <Route path="/notes-etudiant" element={<NotesEtudiant />} />
                 </Routes>
             </div>
         </div>

@@ -7,7 +7,7 @@ import SalesOverviewChart from "../components/overview/MonthlyUsersChart";
 import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
 import SalesChannelChart from "../components/overview/SalesChannelChart";
 
-const Dashboard = () => {
+const Visualisation = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10 bg-gray-900'>
 			<Header title='Dashboard' />
@@ -35,4 +35,4 @@ const Dashboard = () => {
 		</div>
 	);
 };
-export default Dashboard;
+export default Visualisation;

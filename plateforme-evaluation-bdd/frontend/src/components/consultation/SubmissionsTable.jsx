@@ -4,10 +4,8 @@ import { motion } from "framer-motion";
 import ReactDOM from 'react-dom';
 
 const Modal = ({ isOpen, onClose, children }) => {
-  // Ne rien rendre si le modal n'est pas ouvert
   if (!isOpen) return null;
 
-  // Utiliser createPortal pour rendre le modal directement dans le body
   return ReactDOM.createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -32,7 +30,6 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // S'assurer que document est disponible (pour le rendu côté serveur)
     setPortalContainer(document.body);
   }, []);
 
@@ -40,7 +37,6 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
     setSelectedSubmission(submission);
     setAdjustedGrade(submission.professorScore || submission.aiScore);
     setFeedback(submission.feedback || "");
-    // Si c'est déjà examiné, on commence en mode lecture
     setIsEditing(submission.status !== "reviewed");
     setIsModalOpen(true);
   };
@@ -62,36 +58,36 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <div className="px-6 py-4 border-b border-gray-700 flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-white">Recent Submissions</h2>
+        <h2 className="text-xl font-semibold text-white">Soumissions récentes</h2>
       </div>
 
       <div className="overflow-x-auto">
         {loading ? (
           <div className="text-center py-10">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-400">Loading submissions...</p>
+            <p className="text-gray-400">Chargement des soumissions...</p>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Student
+                  Élève
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Exercise
+                  Exercice
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Submitted
+                  Date de soumission
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  AI Score
+                  Note IA
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Final Score
+                  Note finale
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                  Status
+                  Statut
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                   Actions
@@ -125,7 +121,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                         {submission.professorScore}/20
                       </span>
                     ) : (
-                      <span className="text-gray-500">Pending</span>
+                      <span className="text-gray-500">En attente</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -138,8 +134,8 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                       }`}
                     >
                       {submission.status === "reviewed"
-                        ? "Reviewed"
-                        : "Pending Review"}
+                        ? "Corrigé"
+                        : "En attente"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -148,8 +144,8 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                       className="text-indigo-400 hover:text-indigo-300 mr-4"
                       title={
                         submission.status === "reviewed"
-                          ? "View/Edit Details"
-                          : "Review & Grade"
+                          ? "Voir/Modifier"
+                          : "Corriger"
                       }
                     >
                       {submission.status === "reviewed" ? (
@@ -166,35 +162,34 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
         )}
       </div>
 
-      {/* Modal rendu via un portail React */}
       {portalContainer && (
         <Modal isOpen={isModalOpen && selectedSubmission !== null} onClose={() => setIsModalOpen(false)}>
           {selectedSubmission && (
             <>
               <h3 className="text-xl font-bold text-white mb-4">
                 {!isEditing && selectedSubmission.status === "reviewed"
-                  ? "Submission Details"
-                  : "Review Submission"}
+                  ? "Détails de la soumission"
+                  : "Correction"}
               </h3>
 
               <div className="mb-4">
                 <p className="text-gray-300 mb-1">
-                  <span className="font-medium">Student:</span>{" "}
+                  <span className="font-medium">Élève:</span>{" "}
                   {selectedSubmission.studentName}
                 </p>
                 <p className="text-gray-300 mb-1">
-                  <span className="font-medium">Exercise:</span>{" "}
+                  <span className="font-medium">Exercice:</span>{" "}
                   {selectedSubmission.exerciseName}
                 </p>
                 <p className="text-gray-300 mb-1">
-                  <span className="font-medium">Submitted:</span>{" "}
+                  <span className="font-medium">Soumis le:</span>{" "}
                   {new Date(selectedSubmission.submittedAt).toLocaleString()}
                 </p>
               </div>
 
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-white font-medium">AI Generated Score:</p>
+                  <p className="text-white font-medium">Note IA:</p>
                   <p className="text-yellow-400 font-bold">
                     {selectedSubmission.aiScore}/20
                   </p>
@@ -202,13 +197,13 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
 
                 <div className="bg-gray-700 p-4 rounded-lg mb-4">
                   <p className="text-gray-300 text-sm italic">
-                    AI Analysis would appear here, explaining the scoring...
+                    Analyse automatique...
                   </p>
                 </div>
 
                 <div className="mt-4">
                   <label className="block text-white font-medium mb-2">
-                    Professor's Adjusted Score:
+                    Note ajustée:
                   </label>
                   <input
                     type="number"
@@ -224,13 +219,13 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
 
                 <div className="mt-4">
                   <label className="block text-white font-medium mb-2">
-                    Professor's Feedback:
+                    Commentaires:
                   </label>
                   <textarea
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
                     className="bg-gray-700 text-white px-3 py-2 rounded w-full h-32"
-                    placeholder="Provide feedback to the student..."
+                    placeholder="Commentaires pour l'élève..."
                     disabled={!isEditing}
                   ></textarea>
                 </div>
@@ -241,7 +236,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500"
                 >
-                  Cancel
+                  Annuler
                 </button>
                 
                 {selectedSubmission.status === "reviewed" && !isEditing ? (
@@ -249,14 +244,14 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                     onClick={toggleEditMode}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
                   >
-                    Edit
+                    Modifier
                   </button>
                 ) : (
                   <button
                     onClick={handleSaveGrade}
                     className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500"
                   >
-                    Save Changes
+                    Enregistrer
                   </button>
                 )}
               </div>

@@ -3,10 +3,8 @@ import { motion } from "framer-motion";
 
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
-import SalesOverviewChart from "../components/overview/MonthlyUsersChart";
-import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
-import SalesChannelChart from "../components/overview/SalesChannelChart";
-
+import ExercisePerformance from "../components/sales/ExercisePerformance";
+import GradeDistribution from "../components/sales/GradeDistribution";
 const Dashboard = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10 bg-gray-900'>
@@ -26,10 +24,9 @@ const Dashboard = () => {
 				</motion.div>
 
 
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-					<SalesOverviewChart />
-					<CategoryDistributionChart />
-					<SalesChannelChart />
+				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
+					<ExercisePerformance loading={loading} />
+					<GradeDistribution loading={loading} />
 				</div>
 			</main>
 		</div>

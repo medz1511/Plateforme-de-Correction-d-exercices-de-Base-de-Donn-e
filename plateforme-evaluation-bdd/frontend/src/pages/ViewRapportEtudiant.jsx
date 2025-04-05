@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Download, ThumbsUp, MessageCircle, Filter, Search, ArrowLeft } from 'lucide-react';
+import Header from '../components/common/Header';
 
 const ViewRapportEtudiant = () => {
   // État pour stocker l'exercice sélectionné

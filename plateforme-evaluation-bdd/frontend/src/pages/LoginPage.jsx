@@ -1,23 +1,39 @@
 import React, { useState } from 'react';
-import { login, loginWithGoogle, loginWithGitHub, loginWithMicrosoft } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 import { FcGoogle } from "react-icons/fc";
 import { BsGithub } from "react-icons/bs";
 import { BsMicrosoft } from "react-icons/bs";
+import { useAuth } from '../context/AuthContext';
+import { loginWithGoogle, loginWithGitHub, loginWithMicrosoft } from '../services/api';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
-      const response = await login({ email, password });
-      localStorage.setItem('token', response.data.token);
+      const user = await login(email, password);
       setMessage("Connexion réussie !");
-      window.location.href = "/react-dashboard";
+      
+      // Rediriger vers le dashboard approprié selon le rôle
+      if (user.role === 'professeur') {
+        navigate('/react-dashboard');
+      } else {
+        navigate('/dahboard-etudiant');
+      }
     } catch (error) {
       setMessage(error.response?.data?.message || "Erreur de connexion");
+      console.error("Erreur lors de la connexion:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,6 +47,12 @@ const LoginPage = () => {
           </div>
 
           <div className="mt-8">
+            {message && (
+              <div className={`mb-4 p-4 rounded ${message.includes('réussie') ? 'bg-green-800' : 'bg-red-800'}`}>
+                {message}
+              </div>
+            )}
+            
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -72,9 +94,10 @@ const LoginPage = () => {
                 <div>
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm text-sm font-medium text-white"
+                    disabled={loading}
+                    className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm text-sm font-medium text-white disabled:bg-indigo-400"
                   >
-                    Se connecter
+                    {loading ? 'Connexion en cours...' : 'Se connecter'}
                   </button>
                 </div>
               </form>
@@ -89,7 +112,7 @@ const LoginPage = () => {
               </div>
             </div>
 
-            {/* 🔹 Boutons de connexion avec Google, Microsoft & GitHub */}
+            {/* Boutons de connexion avec Google, Microsoft & GitHub */}
             <div className="mt-6 flex flex-col items-center space-y-3">
               <button onClick={loginWithGoogle} className="w-full flex items-center justify-center py-3 px-4 bg-red-600 hover:bg-red-700 rounded-md text-white">
                 <FcGoogle className="mr-2 text-xl" />
@@ -105,6 +128,10 @@ const LoginPage = () => {
               </button>
             </div>
 
+            {/* Indication pour tester */}
+            <div className="mt-4 text-center text-xs text-gray-400">
+              <p>Utiliser un email contenant "prof" ou "enseignant" pour accéder au dashboard professeur</p>
+            </div>
           </div>
         </div>
       </div>

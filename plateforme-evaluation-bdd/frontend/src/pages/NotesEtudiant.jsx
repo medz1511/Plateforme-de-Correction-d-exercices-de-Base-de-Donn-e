@@ -1,103 +1,158 @@
 import { CheckCircle, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
-import CorrectionTable from "../components/correction/CorrectionTable";
 
-const correctionData = [
-  { subject: "Mathématiques", grade: 15, maxGrade: 20 },
-  { subject: "Physique", grade: 17, maxGrade: 20 },
-  { subject: "Chimie", grade: 13, maxGrade: 20 },
-  { subject: "Histoire", grade: 18, maxGrade: 20 },
-  { subject: "Anglais", grade: 14, maxGrade: 20 },
+const devoirsData = [
+  { id: 1, title: "Requête SQL avancée", grade: 16, maxGrade: 20, status: "Corrigé", studentFile: "../../upload/Memo_final.pdf", correctionFile: "../../upload/ExamenMaster1.pdf" },
+  { id: 2, title: "Modélisation relationnelle", grade: 14, maxGrade: 20, status: "Corrigé", studentFile: "../../upload/devoir2.sql", correctionFile: "../../upload/ExamenMaster1.pdf" },
+  { id: 3, title: "Indexation et performance", grade: null, maxGrade: 20, status: "En attente", studentFile: "/pdfs/devoir3.php", correctionFile: "" },
+  { id: 4, title: "Transactions et ACID", grade: null, maxGrade: 20, status: "Refusé", studentFile: "/pdfs/devoir4.pdf", correctionFile: "" },
 ];
 
-const CorrectionResults = () => {
-  const [results, setResults] = useState([]);
+const getFileType = (filePath) => {
+  const extension = filePath.split('.').pop().toLowerCase();
+  if (['pdf'].includes(extension)) return 'pdf';
+  if (['sql', 'php', 'txt'].includes(extension)) return 'text';
+  return 'unknown';
+};
+
+const NoteEtudiant = () => {
+  const [devoirs, setDevoirs] = useState(devoirsData);
   const [loading, setLoading] = useState(true);
+  const [selectedDevoir, setSelectedDevoir] = useState(null);
+  const [studentFileContent, setStudentFileContent] = useState(""); // Contenu du fichier soumis
+  const [correctionFileContent, setCorrectionFileContent] = useState(""); // Contenu du fichier de correction
 
   useEffect(() => {
-    const fetchResults = async () => {
-      setTimeout(() => {
-        setResults(correctionData);
-        setLoading(false);
-      }, 1000);
-    };
-    fetchResults();
+    setTimeout(() => {
+      setDevoirs(devoirsData);
+      setLoading(false);
+    }, 1500);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-white text-lg">
-        Chargement des résultats...
-      </div>
-    );
-  }
+  const loadFileContent = async (filePath, type) => {
+    console.log(`Chargement du fichier ${type} :`, filePath);
+    if (type === "student") {
+      setStudentFileContent("Chargement en cours...");
+    } else {
+      setCorrectionFileContent("Chargement en cours...");
+    }
 
-  const averageGrade = (
-    results.reduce((acc, curr) => acc + curr.grade, 0) / results.length
-  ).toFixed(2);
+    try {
+      const response = await fetch(filePath);
+      if (!response.ok) throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+
+      const text = await response.text();
+      console.log(`Contenu du fichier ${type} :`, text); // Vérifie dans la console
+      if (type === "student") {
+        setStudentFileContent(text);
+      } else {
+        setCorrectionFileContent(text);
+      }
+    } catch (error) {
+      console.error(`Erreur lors du chargement du fichier ${type} :`, error);
+      if (type === "student") {
+        setStudentFileContent("Impossible de charger le fichier.");
+      } else {
+        setCorrectionFileContent("Impossible de charger le fichier.");
+      }
+    }
+  };
+
+  if (loading) return <p>Chargement des résultats...</p>;
 
   return (
-    <div className="flex-1 overflow-auto bg-gray-900 text-white">
-      <Header title="Consultation des Corrections" />
+    <div className="flex-1 overflow-auto relative z-10 bg-gray-900">
+      <Header title="Notes et Corrections des Devoirs" />
 
       <main className="max-w-7xl mx-auto py-6 px-4 lg:px-8">
-        {/* Statistiques */}
         <motion.div
           className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 1 }}
         >
+          <StatCard name="Devoirs soumis" icon={FileText} value={devoirs.length} color="#6366F1" />
           <StatCard
-            name="Total des Matières"
-            icon={FileText}
-            value={results.length}
-            color="#6366F1"
-          />
-          <StatCard
-            name="Moyenne Générale"
+            name="Moyenne des notes"
             icon={CheckCircle}
-            value={averageGrade}
+            value={(
+              devoirs.filter(d => d.grade !== null).reduce((acc, curr) => acc + curr.grade, 0) /
+              devoirs.filter(d => d.grade !== null).length
+            ).toFixed(2)}
             color="#10B981"
           />
         </motion.div>
 
-        {/* Tableau des notes */}
-        <CorrectionTable results={results} />
+        <table className="w-full text-white border border-gray-700">
+          <thead>
+            <tr className="bg-gray-800">
+              <th className="p-3 border-b border-gray-700">Devoir</th>
+              <th className="p-3 border-b border-gray-700">Statut</th>
+              <th className="p-3 border-b border-gray-700">Note</th>
+              <th className="p-3 border-b border-gray-700">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {devoirs.map((devoir) => (
+              <tr key={devoir.id} className="text-center border-b border-gray-700">
+                <td className="p-3">{devoir.title}</td>
+                <td className="p-3">{devoir.status}</td>
+                <td className="p-3">{devoir.grade !== null ? `${devoir.grade} / ${devoir.maxGrade}` : "-"}</td>
+                <td className="p-3">
+                  {devoir.status === "Corrigé" && devoir.correctionFile && (
+                    <button 
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                      onClick={() => {
+                        setSelectedDevoir(devoir);
+                        loadFileContent(devoir.studentFile, "student"); // Charger le fichier de l'étudiant
+                        loadFileContent(devoir.correctionFile, "correction"); // Charger le fichier de correction
+                      }}
+                    >
+                      Voir Correction
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-        {/* Graphe des résultats */}
-        <div className="bg-gray-800 p-6 mt-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl font-semibold mb-4 text-center text-white">
-            Répartition des Notes par Matière
-          </h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={results} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#4B5563" />
-              <XAxis dataKey="subject" stroke="#D1D5DB" />
-              <YAxis stroke="#D1D5DB" domain={[0, 20]} />
-              <Tooltip contentStyle={{ backgroundColor: "#1F2937", borderColor: "#4B5563" }} />
-              <Legend />
-              <Bar dataKey="grade" fill="#34D399" name="Note Obtenue" />
-              <Bar dataKey="maxGrade" fill="#6366F1" name="Note Maximale" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {selectedDevoir && (
+          <div className="mt-6 p-4 bg-gray-800 text-white rounded flex gap-4 relative">
+            <div className="w-1/2">
+              <h3 className="text-lg font-semibold">Devoir soumis :</h3>
+              {getFileType(selectedDevoir.studentFile) === 'pdf' ? (
+                <embed src={selectedDevoir.studentFile} type="application/pdf" className="w-full h-96" />
+              ) : getFileType(selectedDevoir.studentFile) === 'text' ? (
+                <pre className="w-full h-96 overflow-auto bg-gray-700 p-4">{studentFileContent}</pre>
+              ) : (
+                <p>Format de fichier non supporté pour l'affichage</p>
+              )}
+            </div>
+            <div className="w-1/2">
+              <h3 className="text-lg font-semibold">Correction :</h3>
+              {getFileType(selectedDevoir.correctionFile) === 'pdf' ? (
+                <embed src={selectedDevoir.correctionFile} type="application/pdf" className="w-full h-96" />
+              ) : getFileType(selectedDevoir.correctionFile) === 'text' ? (
+                <pre className="w-full h-96 overflow-auto bg-gray-700 p-4">{correctionFileContent}</pre>
+              ) : (
+                <p>Format de fichier non supporté pour l'affichage</p>
+              )}
+            </div>
+            <button 
+              className="absolute top-2 right-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+              onClick={() => setSelectedDevoir(null)}
+            >
+              Fermer
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
-export default CorrectionResults;
+export default NoteEtudiant;

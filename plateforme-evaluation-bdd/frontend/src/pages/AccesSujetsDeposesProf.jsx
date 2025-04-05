@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { FileText, CheckCircle, Upload, X, RefreshCw } from "lucide-react";
+import { FileText, CheckCircle, Upload, X, RefreshCw, Eye, Download, Calendar, AlertCircle, CheckSquare } from "lucide-react";
 import { useState, useRef } from "react";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
 import SubjectsModelsTable from "../components/sujets/subjectsModelsTable";
-
+//affinement
 const AccesSujetsDeposesEtudiant = () => {
     const subjectStats = {
         totalSubjects: 25,
@@ -18,10 +18,43 @@ const AccesSujetsDeposesEtudiant = () => {
     // Vérification si la date actuelle est après la date de clôture
     const isDeadlinePassed = new Date() > deadlineDate;
 
+    // URL de base pour les sujets (à adapter selon votre architecture)
+    const baseSubjectUrl = "/api/subjects";
+
     const [subjects, setSubjects] = useState([
-        { id: 1, title: "Sujet 1", subject: "Mathématiques", date: "2025-04-01", isSubmitted: false, fileName: "" },
-        { id: 2, title: "Sujet 2", subject: "Physique", date: "2025-04-02", isSubmitted: false, fileName: "" },
-        { id: 3, title: "Sujet 3", subject: "Informatique", date: "2025-04-03", isSubmitted: false, fileName: "" },
+        { 
+            id: 1, 
+            title: "Sujet 1", 
+            subject: "Mathématiques", 
+            date: "2025-04-01", 
+            description: "Ce sujet porte sur les équations différentielles et les applications en physique. Vous devrez résoudre un ensemble de problèmes et expliquer votre démarche.", 
+            deadline: "2025-04-20",
+            isSubmitted: false, 
+            fileName: "", 
+            pdfUrl: "/path/to/subject1.pdf" 
+        },
+        { 
+            id: 2, 
+            title: "Sujet 2", 
+            subject: "Physique", 
+            date: "2025-04-02", 
+            description: "Analyse des circuits électriques et lois de Kirchhoff. Ce devoir comprend une partie théorique et des exercices pratiques.", 
+            deadline: "2025-04-22",
+            isSubmitted: false, 
+            fileName: "", 
+            pdfUrl: "/path/to/subject2.pdf" 
+        },
+        { 
+            id: 3, 
+            title: "Sujet 3", 
+            subject: "Informatique", 
+            date: "2025-04-03", 
+            description: "Programmation orientée objet et conception d'algorithmes. Vous devrez implémenter une solution et analyser sa complexité.", 
+            deadline: "2025-04-25",
+            isSubmitted: false, 
+            fileName: "", 
+            pdfUrl: "/path/to/subject3.pdf" 
+        },
     ]);
 
     // Référence pour l'input file
@@ -31,6 +64,11 @@ const AccesSujetsDeposesEtudiant = () => {
     const [uploadingSubjectId, setUploadingSubjectId] = useState(null);
     const [fileError, setFileError] = useState("");
     const [confirmWithdraw, setConfirmWithdraw] = useState(null);
+    
+    // État pour le modal d'affichage du PDF
+    const [viewingPdf, setViewingPdf] = useState(null);
+    // Nouvel état pour le modal d'affichage des détails du sujet
+    const [viewingSubjectDetails, setViewingSubjectDetails] = useState(null);
 
     const openFileSelector = (subjectId) => {
         if (fileInputRefs.current[subjectId]) {
@@ -84,6 +122,58 @@ const AccesSujetsDeposesEtudiant = () => {
                 : subject
         ));
         setConfirmWithdraw(null);
+    };
+
+    // Fonctions pour gérer les actions d'affichage et de téléchargement
+    const viewSubject = (subjectId) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (subject) {
+            // Ouvrir le modal de détails du sujet au lieu du PDF directement
+            setViewingSubjectDetails(subject);
+        }
+    };
+
+    // Nouvelle fonction pour ouvrir le PDF après avoir vu les détails
+    const openPdfViewer = (subject) => {
+        setViewingSubjectDetails(null);
+        setViewingPdf(subject);
+    };
+
+    const downloadSubject = (subjectId) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (subject) {
+            // Créer un lien temporaire pour déclencher le téléchargement
+            const link = document.createElement('a');
+            link.href = subject.pdfUrl;
+            link.download = `${subject.title}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
+    // Fermer les modals
+    const closeViewingPdf = () => {
+        setViewingPdf(null);
+    };
+
+    const closeViewingDetails = () => {
+        setViewingSubjectDetails(null);
+    };
+
+    // Formater la date pour l'affichage
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('fr-FR', options);
+    };
+
+    // Vérifier si la date limite est proche (moins de 3 jours)
+    const isDeadlineClose = (deadlineString) => {
+        const today = new Date();
+        const deadline = new Date(deadlineString);
+        const diffTime = deadline - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 && diffDays <= 3;
     };
 
     return (
@@ -146,13 +236,34 @@ const AccesSujetsDeposesEtudiant = () => {
                                             />
                                         
                                             {!subject.isSubmitted && !isDeadlinePassed && (
-                                                <button
-                                                    className="flex justify-center items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                                                    onClick={() => handleSubmit(subject.id)}
-                                                >
-                                                    <Upload className="mr-2" />
-                                                    Rendre le devoir
-                                                </button>
+                                                <div className="flex space-x-2">
+                                                    {/* Bouton œil pour visualiser */}
+                                                    <button
+                                                        className="flex justify-center items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                        onClick={() => viewSubject(subject.id)}
+                                                        title="Visualiser le sujet"
+                                                    >
+                                                        <Eye className="h-5 w-5" />
+                                                    </button>
+                                                    
+                                                    {/* Bouton télécharger */}
+                                                    <button
+                                                        className="flex justify-center items-center px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                                                        onClick={() => downloadSubject(subject.id)}
+                                                        title="Télécharger le sujet"
+                                                    >
+                                                        <Download className="h-5 w-5" />
+                                                    </button>
+                                                    
+                                                    {/* Bouton rendre le devoir */}
+                                                    <button
+                                                        className="flex justify-center items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                                                        onClick={() => handleSubmit(subject.id)}
+                                                    >
+                                                        <Upload className="mr-2" />
+                                                        Rendre le devoir
+                                                    </button>
+                                                </div>
                                             )}
                                             {subject.isSubmitted && !isDeadlinePassed && (
                                                 <div className="flex flex-col items-center space-y-2">
@@ -161,6 +272,21 @@ const AccesSujetsDeposesEtudiant = () => {
                                                         <span className="text-gray-400 text-sm">{subject.fileName}</span>
                                                     </div>
                                                     <div className="flex space-x-2">
+                                                        {/* Ajout des boutons œil et télécharger */}
+                                                        <button
+                                                            className="flex justify-center items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                            onClick={() => viewSubject(subject.id)}
+                                                            title="Visualiser le sujet"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            className="flex justify-center items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+                                                            onClick={() => downloadSubject(subject.id)}
+                                                            title="Télécharger le sujet"
+                                                        >
+                                                            <Download className="h-4 w-4" />
+                                                        </button>
                                                         <button
                                                             className="flex justify-center items-center px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                                                             onClick={() => handleWithdraw(subject.id)}
@@ -182,10 +308,42 @@ const AccesSujetsDeposesEtudiant = () => {
                                                 <div className="flex flex-col items-center">
                                                     <span className="text-green-400 mb-1">Devoir rendu</span>
                                                     <span className="text-gray-400 text-sm">{subject.fileName}</span>
+                                                    <div className="flex space-x-2 mt-2">
+                                                        <button
+                                                            className="flex justify-center items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                            onClick={() => viewSubject(subject.id)}
+                                                            title="Visualiser le sujet"
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            className="flex justify-center items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+                                                            onClick={() => downloadSubject(subject.id)}
+                                                            title="Télécharger le sujet"
+                                                        >
+                                                            <Download className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )}
                                             {isDeadlinePassed && !subject.isSubmitted && (
-                                                <span className="text-red-500">Date limite dépassée</span>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        className="flex justify-center items-center px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                        onClick={() => viewSubject(subject.id)}
+                                                        title="Visualiser le sujet"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                    <button
+                                                        className="flex justify-center items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm"
+                                                        onClick={() => downloadSubject(subject.id)}
+                                                        title="Télécharger le sujet"
+                                                    >
+                                                        <Download className="h-4 w-4" />
+                                                    </button>
+                                                    <span className="text-red-500">Date limite dépassée</span>
+                                                </div>
                                             )}
                                         </div>
                                     </td>
@@ -279,6 +437,168 @@ const AccesSujetsDeposesEtudiant = () => {
                                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                                 >
                                     Confirmer le retrait
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* NOUVEAU: Modal pour afficher les détails du sujet */}
+                {viewingSubjectDetails && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-2xl flex flex-col">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-2xl font-semibold text-white">
+                                    {viewingSubjectDetails.title}
+                                </h3>
+                                <button 
+                                    onClick={closeViewingDetails}
+                                    className="text-gray-400 hover:text-white"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            
+                            <div className="bg-gray-700 p-6 rounded-lg mb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <div className="flex items-center">
+                                        <FileText className="text-blue-400 mr-2" size={20} />
+                                        <span className="text-gray-300">Matière: </span>
+                                        <span className="ml-2 text-white font-medium">{viewingSubjectDetails.subject}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <Calendar className="text-blue-400 mr-2" size={20} />
+                                        <span className="text-gray-300">Date de publication: </span>
+                                        <span className="ml-2 text-white font-medium">{formatDate(viewingSubjectDetails.date)}</span>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <AlertCircle className="text-red-400 mr-2" size={20} />
+                                        <span className="text-gray-300">Date limite: </span>
+                                        <span className={`ml-2 font-medium ${
+                                            isDeadlinePassed ? 'text-red-500' : 
+                                            isDeadlineClose(viewingSubjectDetails.deadline) ? 'text-yellow-400' : 'text-green-400'
+                                        }`}>
+                                            {formatDate(viewingSubjectDetails.deadline)}
+                                            {isDeadlinePassed ? ' (Dépassée)' : 
+                                             isDeadlineClose(viewingSubjectDetails.deadline) ? ' (Proche)' : ''}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center">
+                                        <CheckSquare className={`mr-2 ${viewingSubjectDetails.isSubmitted ? 'text-green-400' : 'text-gray-400'}`} size={20} />
+                                        <span className="text-gray-300">Statut: </span>
+                                        <span className={`ml-2 font-medium ${viewingSubjectDetails.isSubmitted ? 'text-green-400' : 'text-yellow-400'}`}>
+                                            {viewingSubjectDetails.isSubmitted ? 'Devoir rendu' : 'À rendre'}
+                                            {viewingSubjectDetails.isSubmitted && 
+                                                <span className="text-sm text-gray-400 ml-2">({viewingSubjectDetails.fileName})</span>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <h4 className="text-lg text-white font-medium mb-2">Description du sujet</h4>
+                                <p className="text-gray-200 mb-4">{viewingSubjectDetails.description}</p>
+                                
+                                {!viewingSubjectDetails.isSubmitted && !isDeadlinePassed ? (
+                                    <div className="p-3 bg-gray-600 rounded text-yellow-300 flex items-center">
+                                        <AlertCircle className="mr-2" size={18} />
+                                        N'oubliez pas de rendre votre devoir avant la date limite.
+                                    </div>
+                                ) : viewingSubjectDetails.isSubmitted ? (
+                                    <div className="p-3 bg-green-900 rounded text-green-300 flex items-center">
+                                        <CheckCircle className="mr-2" size={18} />
+                                        Votre devoir a bien été rendu.
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-red-900 rounded text-red-300 flex items-center">
+                                        <X className="mr-2" size={18} />
+                                        La date limite est dépassée. Vous ne pouvez plus rendre votre devoir.
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="flex justify-between">
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={() => openPdfViewer(viewingSubjectDetails)}
+                                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                    >
+                                        <Eye className="mr-2" />
+                                        Voir le PDF
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => downloadSubject(viewingSubjectDetails.id)}
+                                        className="flex items-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                                    >
+                                        <Download className="mr-2" />
+                                        Télécharger
+                                    </button>
+                                </div>
+                                
+                                {!viewingSubjectDetails.isSubmitted && !isDeadlinePassed && (
+                                    <button 
+                                        onClick={() => {
+                                            closeViewingDetails();
+                                            handleSubmit(viewingSubjectDetails.id);
+                                        }}
+                                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                    >
+                                        <Upload className="mr-2" />
+                                        Rendre le devoir
+                                    </button>
+                                )}
+                                
+                                <button 
+                                    onClick={closeViewingDetails}
+                                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                >
+                                    Fermer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal pour afficher le PDF */}
+                {viewingPdf && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+                        <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-5xl h-5/6 flex flex-col">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-semibold text-white">
+                                    {viewingPdf.title}
+                                </h3>
+                                <button 
+                                    onClick={closeViewingPdf}
+                                    className="text-gray-400 hover:text-white"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+                            
+                            <div className="flex-1 bg-white rounded overflow-hidden">
+                                <iframe 
+                                    src={`${viewingPdf.pdfUrl}#toolbar=0`} 
+                                    className="w-full h-full" 
+                                    title={`PDF pour ${viewingPdf.title}`}
+                                />
+                            </div>
+                            
+                            <div className="flex justify-between mt-4">
+                                <button
+                                    onClick={() => downloadSubject(viewingPdf.id)}
+                                    className="flex items-center px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                                >
+                                    <Download className="mr-2 h-5 w-5" />
+                                    Télécharger ce fichier
+                                </button>
+                                <button 
+                                    onClick={closeViewingPdf}
+                                    className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                                >
+                                    Fermer
                                 </button>
                             </div>
                         </div>

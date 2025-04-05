@@ -6,12 +6,13 @@ import { Link } from "react-router-dom";
 
 
 const SIDEBAR_ITEMS = [
+	{ name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
 	{ name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models" },
 	{ name: "Consultation notes ", icon: ShoppingCart, color: "#F59E0B", href: "/consultation-notes" },
     { name: "Nouveau Exercices ", icon: ShoppingCart, color: "#F59E0B", href: "/ajoutExercice" },
 	{ name: "Rapport Etudiant ", icon: ShoppingCart, color: "#F59E0B", href: "/viewRapport" },
 
-	{ name: "Dashboard", icon: BarChart2, color: "#6366f1", href: "/react-dashboard" },
+	
 	{ name: "Leads", icon: Users, color: "#EC4899", href: "/leads" },
 	{ name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics" },
 	{ name: "Products", icon: ShoppingBag, color: "#8B5CF6", href: "/products" },

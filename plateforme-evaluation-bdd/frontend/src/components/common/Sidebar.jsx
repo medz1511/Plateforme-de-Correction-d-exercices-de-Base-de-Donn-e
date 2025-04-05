@@ -33,7 +33,7 @@ import {
   
       // Filtrer les items du sidebar selon le rôle de l'utilisateur
       const filteredItems = SIDEBAR_ITEMS.filter(item => 
-          item.roles.includes(currentUser?.role || "etudiant")
+          item.roles.includes(currentUser?.role || "Etudiant")
       );
   
       const handleLogout = async () => {
@@ -55,7 +55,7 @@ import {
                               exit={{ opacity: 0 }}
                               className="text-xl font-bold text-white"
                           >
-                              Lafinal
+                              KOUNAMA 
                           </motion.div>
                       )}
                       <motion.button

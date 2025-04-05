@@ -12,7 +12,7 @@ import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
-import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
+import ExerciceEtudiant from "./pages/ExerciceEtudiant";
 import NotesEtudiant from "./pages/NotesEtudiant";
 import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
@@ -75,14 +75,6 @@ function AppRoutes() {
             } 
           />
           <Route 
-            path="/viewRapport" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <ViewRapportEtudiant />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
             path="/notes-etudiant" 
             element={
               <ProtectedRoute allowedRoles={['etudiant']}>
@@ -90,8 +82,24 @@ function AppRoutes() {
               </ProtectedRoute>
             } 
           />
+            <Route 
+              path="/devoirs" 
+              element={
+                <ProtectedRoute allowedRoles={['etudiant']}>
+                  <ExerciceEtudiant />
+                </ProtectedRoute>
+              } 
+            />
           
           {/* Routes pour les professeurs */}
+          <Route 
+              path="/viewRapport" 
+              element={
+                <ProtectedRoute allowedRoles={['professeur']}>
+                  <ViewRapportEtudiant />
+                  </ProtectedRoute>
+                } 
+            />
           <Route 
             path="/react-dashboard" 
             element={
@@ -105,14 +113,6 @@ function AppRoutes() {
             element={
               <ProtectedRoute allowedRoles={['professeur']}>
                 <AjoutExercice />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/sujets-deposes" 
-            element={
-              <ProtectedRoute allowedRoles={['etudiant']}>
-                <AccesSujetsDeposesProf />
               </ProtectedRoute>
             } 
           />

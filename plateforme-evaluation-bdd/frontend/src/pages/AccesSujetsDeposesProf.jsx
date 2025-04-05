@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
 import SubjectsModelsTable from "../components/sujets/subjectsModelsTable";
-
+//affinement
 const AccesSujetsDeposesEtudiant = () => {
     const subjectStats = {
         totalSubjects: 25,

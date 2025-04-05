@@ -77,7 +77,7 @@ function AppRoutes() {
           <Route 
             path="/viewRapport" 
             element={
-              <ProtectedRoute allowedRoles={['etudiant']}>
+              <ProtectedRoute allowedRoles={['professeur']}>
                 <ViewRapportEtudiant />
               </ProtectedRoute>
             } 
@@ -111,7 +111,7 @@ function AppRoutes() {
           <Route 
             path="/sujets-deposes" 
             element={
-              <ProtectedRoute allowedRoles={['professeur']}>
+              <ProtectedRoute allowedRoles={['etudiant']}>
                 <AccesSujetsDeposesProf />
               </ProtectedRoute>
             } 
@@ -133,47 +133,8 @@ function AppRoutes() {
             } 
           />
           
-          {/* Autres routes (réservées aux professeurs pour l'instant) */}
-          <Route 
-            path="/leads" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <Leads />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/analytics" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/products" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <ProductsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/reports" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <SalesPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/orders" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <OrdersPage />
-              </ProtectedRoute>
-            } 
-          />
+        
+        
           
           {/* Routes accessibles aux deux rôles */}
           <Route 

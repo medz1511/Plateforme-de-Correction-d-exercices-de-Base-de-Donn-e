@@ -11,21 +11,16 @@ import {
   // Définir les items du sidebar avec leur rôle associé
   const SIDEBAR_ITEMS = [
       // Items pour les professeurs
-      { name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models", roles: ["professeur"] },
-      { name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes", roles: ["professeur"] },
-      { name: "Nouveau Exercices", icon: FilePlus, color: "#F59E0B", href: "/ajoutExercice", roles: ["professeur"] },
-      { name: "Consultation notes", icon: Clipboard, color: "#F59E0B", href: "/consultation-notes", roles: ["professeur"] },
       { name: "Dashboard Prof", icon: BarChart2, color: "#6366f1", href: "/react-dashboard", roles: ["professeur"] },
-      { name: "Leads", icon: Users, color: "#EC4899", href: "/leads", roles: ["professeur"] },
-      { name: "Analytics", icon: TrendingUp, color: "#3B82F6", href: "/analytics", roles: ["professeur"] },
-      { name: "Products", icon: ShoppingBag, color: "#8B5CF6", href: "/products", roles: ["professeur"] },
-      { name: "Sales Reports", icon: DollarSign, color: "#10B981", href: "/reports", roles: ["professeur"] },
-      { name: "Orders", icon: ShoppingCart, color: "#F59E0B", href: "/orders", roles: ["professeur"] },
-      
+      { name: "Nouveau Exercices", icon: FilePlus, color: "#F59E0B", href: "/ajoutExercice", roles: ["professeur"] },
+      { name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models", roles: ["professeur"] },
+      { name: "Consultation notes", icon: Clipboard, color: "#F59E0B", href: "/consultation-notes", roles: ["professeur"] },
+      { name: "Mes rapports", icon: FileText, color: "#F59E0B", href: "/viewRapport", roles: ["professeur"] },
+     
       // Items pour les étudiants
       { name: "Dashboard Étudiant", icon: BarChart2, color: "#6366f1", href: "/dahboard-etudiant", roles: ["etudiant"] },
       { name: "Mes notes", icon: ClipboardCheck, color: "#10B981", href: "/notes-etudiant", roles: ["etudiant"] },
-      { name: "Mes rapports", icon: FileText, color: "#F59E0B", href: "/viewRapport", roles: ["etudiant"] },
+      { name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes", roles: ["etudiant"] },
       
       // Items pour tous les rôles
       { name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings", roles: ["professeur", "etudiant"] },
@@ -60,7 +55,7 @@ import {
                               exit={{ opacity: 0 }}
                               className="text-xl font-bold text-white"
                           >
-                              E-Learning
+                              Lafinal
                           </motion.div>
                       )}
                       <motion.button

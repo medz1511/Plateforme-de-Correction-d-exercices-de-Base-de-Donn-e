@@ -11,14 +11,14 @@ import {
   // Définir les items du sidebar avec leur rôle associé
   const SIDEBAR_ITEMS = [
       // Items pour les professeurs
-      { name: "Dashboard Prof", icon: BarChart2, color: "#6366f1", href: "/react-dashboard", roles: ["professeur"] },
+      { name: "Dashboard ", icon: BarChart2, color: "#6366f1", href: "/react-dashboard", roles: ["professeur"] },
       { name: "Nouveau Exercices", icon: FilePlus, color: "#F59E0B", href: "/ajoutExercice", roles: ["professeur"] },
       { name: "Modèles de correction", icon: FileTextIcon, color: "#6366f1", href: "/correction-models", roles: ["professeur"] },
       { name: "Consultation notes", icon: Clipboard, color: "#F59E0B", href: "/consultation-notes", roles: ["professeur"] },
-      { name: "Mes rapports", icon: FileText, color: "#F59E0B", href: "/viewRapport", roles: ["professeur"] },
+      { name: "rapports Etudiants", icon: FileText, color: "#F59E0B", href: "/viewRapport", roles: ["professeur"] },
      
       // Items pour les étudiants
-      { name: "Dashboard Étudiant", icon: BarChart2, color: "#6366f1", href: "/dahboard-etudiant", roles: ["etudiant"] },
+      { name: "Dashboard ", icon: BarChart2, color: "#6366f1", href: "/dahboard-etudiant", roles: ["etudiant"] },
       { name: "Mes notes", icon: ClipboardCheck, color: "#10B981", href: "/notes-etudiant", roles: ["etudiant"] },
       { name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes", roles: ["etudiant"] },
       

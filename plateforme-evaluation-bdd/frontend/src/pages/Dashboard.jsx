@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
-import SalesOverviewChart from "../components/overview/MonthlyUsersChart";
-import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
-import SalesChannelChart from "../components/overview/SalesChannelChart";
+import GradeDistribution from "../components/overview/GradeDistribution";
+import ExercisePerformance from "../components/overview/ExercisePerformance";
+//import SalesOverviewChart from "../components/overview/MonthlyUsersChart";
+//import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
+//import SalesChannelChart from "../components/overview/SalesChannelChart";
 
 const Dashboard = () => {
 	return (
@@ -27,9 +29,9 @@ const Dashboard = () => {
 
 
 				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-					<SalesOverviewChart />
-					<CategoryDistributionChart />
-					<SalesChannelChart />
+					<GradeDistribution />
+					<ExercisePerformance />
+					
 				</div>
 			</main>
 		</div>

@@ -1,4 +1,4 @@
-import { BarChart2, ShoppingBag, Users, Zap } from "lucide-react";
+import { BarChart2, BookOpen, Users, Award } from "lucide-react";
 import { motion } from "framer-motion";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
@@ -8,13 +8,13 @@ import { useTheme } from "../context/ThemeContext";
 import ClickableText from "../context/ClickableText";
 
 const Dashboard = () => {
-  const { darkMode, toggleTheme } = useTheme();
+  const { darkMode } = useTheme();
 
   return (
     <div className={`flex-1 overflow-auto relative z-10 transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Header title={
         <ClickableText id="dashboard-title" effect="📊" effectDuration={800}>
-          Dashboard
+          Tableau de Bord Éducatif
         </ClickableText>
       } />
 
@@ -26,31 +26,31 @@ const Dashboard = () => {
           transition={{ duration: 1 }}
         >
           <StatCard 
-            name={<ClickableText id="sales-title" effect="💰">Total Sales</ClickableText>}
-            icon={Zap} 
-            value='&#8377; 1,12,345' 
-            color={darkMode ? '#8183f4' : '#6366F1'}
-            darkMode={darkMode}
-          />
-          <StatCard 
-            name={<ClickableText id="users-title" effect="👥">New Users</ClickableText>}
+            name={<ClickableText id="students-title" effect="👥">Étudiants</ClickableText>}
             icon={Users} 
-            value='192' 
-            color={darkMode ? '#9d7cf7' : '#8B5CF6'}
+            value='248' 
+            color={darkMode ? '#818cf8' : '#6366F1'}
             darkMode={darkMode}
           />
           <StatCard 
-            name={<ClickableText id="courses-title" effect="📚">Total Courses</ClickableText>}
-            icon={ShoppingBag} 
-            value='12' 
-            color={darkMode ? '#F472B6' : '#EC4899'}
-            darkMode={darkMode}
-          />
-          <StatCard 
-            name={<ClickableText id="active-title" effect="🔥">Users Active Now</ClickableText>}
+            name={<ClickableText id="average-title" effect="📊">Moyenne Générale</ClickableText>}
             icon={BarChart2} 
-            value='52.5%' 
-            color={darkMode ? '#34D399' : '#10B981'}
+            value='14.2/20' 
+            color={darkMode ? '#34d399' : '#10B981'}
+            darkMode={darkMode}
+          />
+          <StatCard 
+            name={<ClickableText id="courses-title" effect="📚">Cours Actifs</ClickableText>}
+            icon={BookOpen} 
+            value='18' 
+            color={darkMode ? '#f472b6' : '#EC4899'}
+            darkMode={darkMode}
+          />
+          <StatCard 
+            name={<ClickableText id="excellence-title" effect="🏆">Mentions Excellent</ClickableText>}
+            icon={Award} 
+            value='32%' 
+            color={darkMode ? '#fbbf24' : '#F59E0B'}
             darkMode={darkMode}
           />
         </motion.div>
@@ -62,7 +62,7 @@ const Dashboard = () => {
             whileTap={{ scale: 0.99 }}
           >
             <ClickableText id="grade-title" effect="📈" className="block text-lg font-semibold mb-4">
-              Grade Distribution
+              Répartition des Notes
             </ClickableText>
             <GradeDistribution darkMode={darkMode} />
           </motion.div>
@@ -72,14 +72,12 @@ const Dashboard = () => {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
           >
-            <ClickableText id="exercise-title" effect="💪" className="block text-lg font-semibold mb-4">
-              Exercise Performance
+            <ClickableText id="exercise-title" effect="📝" className="block text-lg font-semibold mb-4">
+              Performance des Exercices
             </ClickableText>
             <ExercisePerformance darkMode={darkMode} />
           </motion.div>
         </div>
-
-        
       </main>
     </div>
   );

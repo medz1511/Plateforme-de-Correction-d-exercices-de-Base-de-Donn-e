@@ -3,8 +3,12 @@ import { motion } from "framer-motion";
 
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
-import ExercisePerformance from "../components/sales/ExercisePerformance";
-import GradeDistribution from "../components/sales/GradeDistribution";
+import GradeDistribution from "../components/overview/GradeDistribution";
+import ExercisePerformance from "../components/overview/ExercisePerformance";
+//import SalesOverviewChart from "../components/overview/MonthlyUsersChart";
+//import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
+//import SalesChannelChart from "../components/overview/SalesChannelChart";
+
 const Dashboard = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10 bg-gray-900'>
@@ -17,16 +21,17 @@ const Dashboard = () => {
 					animate={{ opacity: 1, y: 0 }}
 					transition={{ duration: 1 }}
 				>
-					<StatCard name='Total Sales' icon={Zap} value='&#8377; 1,12,345' color='#6366F1' />
-					<StatCard name='New Users' icon={Users} value='192' color='#8B5CF6' />
-					<StatCard name='Total Courses' icon={ShoppingBag} value='12' color='#EC4899' />
-					<StatCard name='Users Active Now' icon={BarChart2} value='52.5%' color='#10B981' />
+					<StatCard name='Moyenne de la Classe' icon={Zap} value='&#8377; 1,12,345' color='#6366F1' />
+					<StatCard name="Nombre d'Etudiants" icon={Users} value='192' color='#8B5CF6' />
+					<StatCard name='Nombre Total de Sujets déposés' icon={ShoppingBag} value='12' color='#EC4899' />
+					<StatCard name='Taux de Réussite' icon={BarChart2} value='52.5%' color='#10B981' />
 				</motion.div>
 
 
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
-					<ExercisePerformance loading={loading} />
-					<GradeDistribution loading={loading} />
+				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+					<GradeDistribution />
+					<ExercisePerformance />
+					
 				</div>
 			</main>
 		</div>

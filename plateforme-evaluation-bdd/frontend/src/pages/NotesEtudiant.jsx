@@ -6,7 +6,7 @@ import StatCard from "../components/common/StatCard";
 
 const devoirsData = [
   { id: 1, title: "Requête SQL avancée", grade: 16, maxGrade: 20, status: "Corrigé", studentFile: "../../upload/Memo_final.pdf", correctionFile: "../../upload/ExamenMaster1.pdf" },
-  { id: 2, title: "Modélisation relationnelle", grade: 14, maxGrade: 20, status: "Corrigé", studentFile: "../../upload/devoir2.sql", correctionFile: "../../upload/ExamenMaster1.pdf" },
+  { id: 2, title: "Modélisation relationnelle", grade: 14, maxGrade: 20, status: "Corrigé", studentFile: "../../upload/devoir2.sql", correctionFile: "../../upload/Memo_final.pdf" },
   { id: 3, title: "Indexation et performance", grade: null, maxGrade: 20, status: "En attente", studentFile: "/pdfs/devoir3.php", correctionFile: "" },
   { id: 4, title: "Transactions et ACID", grade: null, maxGrade: 20, status: "Refusé", studentFile: "/pdfs/devoir4.pdf", correctionFile: "" },
 ];

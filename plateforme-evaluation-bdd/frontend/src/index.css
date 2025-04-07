@@ -2,20 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-
+/* Barre de défilement personnalisée */
 ::-webkit-scrollbar {
     width: 10px;
+    height: 10px;
 }
 
+body {
+    @apply bg-gray-50 dark:bg-gray-900 transition-colors duration-200;
+  }
+/* Piste de la barre de défilement */
 ::-webkit-scrollbar-track {
-    background: 'black';
+    background: transparent;
 }
 
+/* Curseur de la barre de défilement */
 ::-webkit-scrollbar-thumb {
-    background: #b4e2d8;
     border-radius: 8px;
+    @apply bg-emerald-200 dark:bg-emerald-600;
 }
 
+/* Curseur au survol */
 ::-webkit-scrollbar-thumb:hover {
-    background: #8cefc6;
+    @apply bg-emerald-300 dark:bg-emerald-500;
 }
+
+/* Styles de base pour le mode clair/sombre */
+@layer base {
+    body {
+        @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Styles pour les sélections de texte */
+    ::selection {
+        @apply bg-emerald-400 dark:bg-emerald-600 text-white;
+    }
+}
+
+/* Styles personnalisés */
+@layer components {
+    .card {
+        @apply rounded-lg p-6 shadow;
+        @apply bg-white dark:bg-gray-800;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary {
+        @apply px-4 py-2 rounded-md font-medium;
+        @apply bg-emerald-500 hover:bg-emerald-600 text-white;
+        @apply dark:bg-emerald-600 dark:hover:bg-emerald-700;
+        transition: all  0.3s ease;
+    }
+}
+
+

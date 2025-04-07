@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, Download, ThumbsUp, MessageCircle, Filter, Search, ArrowLeft } from 'lucide-react';
 import Header from '../components/common/Header';
+import { useTheme } from '../context/ThemeContext';
 
 const ViewRapportEtudiant = () => {
-  // État pour stocker l'exercice sélectionné
+  const { darkMode } = useTheme();
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
-  // État pour la recherche d'étudiants
   const [searchQuery, setSearchQuery] = useState('');
-  // État pour le filtre de statut
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Données simulées - À remplacer par des appels API réels
+  // Données simulées
   const exercices = [
     { id: 1, titre: "Introduction SQL - Requêtes simples", sujet: "Bases de données SQL", date: "12/03/2025", nbSoumissions: 28, nbEnAttente: 3 },
     { id: 2, titre: "Jointures et sous-requêtes", sujet: "Bases de données SQL", date: "15/03/2025", nbSoumissions: 25, nbEnAttente: 5 },
@@ -31,7 +30,6 @@ const ViewRapportEtudiant = () => {
     { id: 10, exerciceId: 3, etudiant: "Chloé Rousseau", email: "chloe.rousseau@edu.fr", dateRemise: "16/03/2025", statut: "En attente", note: "-", commentaires: 0 }
   ];
 
-  // Filtrer les rapports selon l'exercice sélectionné, la recherche et le statut
   const getFilteredReports = () => {
     if (!selectedExerciseId) return [];
     
@@ -46,27 +44,25 @@ const ViewRapportEtudiant = () => {
 
   const handleExerciseSelect = (exerciseId) => {
     setSelectedExerciseId(exerciseId);
-    // Réinitialiser les filtres
     setSearchQuery('');
     setStatusFilter('all');
   };
 
   const handleReportView = (reportId) => {
     console.log(`Voir le rapport ${reportId}`);
-    // Ici, tu pourrais ouvrir une modal ou naviguer vers une page de détail
   };
 
   const handleReportDownload = (reportId) => {
     console.log(`Télécharger le rapport ${reportId}`);
-    // Ici, tu déclencherais le téléchargement du rapport
   };
 
-  // Liste des exercices
   const ExercisesList = () => (
-    <div className="bg-gray-800 rounded-lg shadow-lg">
-      <div className="p-4 bg-gray-750 border-b border-gray-700">
-        <h2 className="text-lg font-semibold text-white">Liste des exercices</h2>
-        <p className="text-sm text-gray-400">Sélectionnez un exercice pour voir les rapports des étudiants</p>
+    <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className={`p-4 border-b ${darkMode ? 'bg-gray-750 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Liste des exercices</h2>
+        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          Sélectionnez un exercice pour voir les rapports des étudiants
+        </p>
       </div>
       
       <div className="p-4">
@@ -74,7 +70,7 @@ const ViewRapportEtudiant = () => {
           <input
             type="text"
             placeholder="Rechercher un exercice..."
-            className="w-full p-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+            className={`w-full p-2 rounded-md ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'} border`}
           />
         </div>
         
@@ -82,21 +78,21 @@ const ViewRapportEtudiant = () => {
           {exercices.map(exercice => (
             <div 
               key={exercice.id}
-              className="bg-gray-750 p-4 rounded-md cursor-pointer hover:bg-gray-700 transition-colors"
+              className={`p-4 rounded-md cursor-pointer transition-colors ${darkMode ? 'bg-gray-750 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'}`}
               onClick={() => handleExerciseSelect(exercice.id)}
             >
-              <h3 className="font-medium text-blue-400">{exercice.titre}</h3>
-              <div className="text-sm text-gray-400 mt-1">Sujet: {exercice.sujet}</div>
-              <div className="text-sm text-gray-400">Date limite: {exercice.date}</div>
+              <h3 className={`font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{exercice.titre}</h3>
+              <div className={`text-sm mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Sujet: {exercice.sujet}</div>
+              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Date limite: {exercice.date}</div>
               
               <div className="flex items-center mt-2">
                 <div className="mr-4">
-                  <span className="px-2 py-1 bg-blue-900 text-blue-100 text-xs rounded-full">
+                  <span className={`px-2 py-1 text-xs rounded-full ${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'}`}>
                     {exercice.nbSoumissions} soumissions
                   </span>
                 </div>
                 <div>
-                  <span className="px-2 py-1 bg-yellow-900 text-yellow-100 text-xs rounded-full">
+                  <span className={`px-2 py-1 text-xs rounded-full ${darkMode ? 'bg-yellow-900 text-yellow-100' : 'bg-yellow-100 text-yellow-800'}`}>
                     {exercice.nbEnAttente} en attente
                   </span>
                 </div>
@@ -108,169 +104,167 @@ const ViewRapportEtudiant = () => {
     </div>
   );
 
-  // Détail des rapports pour un exercice sélectionné
   const ReportsList = () => {
     const exercice = exercices.find(ex => ex.id === selectedExerciseId);
     const filteredReports = getFilteredReports();
     
     return (
-        <div className='flex-1 overflow-auto relative z-10 bg-gray-900'>
-			<Header title={"Rapport des Etudiants"} />
-      <div className="bg-gray-800 rounded-lg shadow-lg">
-        <div className="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
-          <div>
-            <button 
-              className="mb-2 inline-flex items-center text-sm text-gray-400 hover:text-white"
-              onClick={() => setSelectedExerciseId(null)}
-            >
-              <ArrowLeft size={16} className="mr-1" />
-              Retour à la liste
-            </button>
-            <h2 className="text-lg font-semibold text-white">{exercice.titre}</h2>
-            <p className="text-sm text-gray-400">
-              {exercice.sujet} - Date limite: {exercice.date}
-            </p>
-          </div>
-          <div>
-            <span className="px-3 py-1 bg-blue-900 text-blue-100 text-sm rounded-md mr-2">
-              {exercice.nbSoumissions} soumissions
-            </span>
-            <button className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded-md">
-              Télécharger tout
-            </button>
-          </div>
-        </div>
+      <div className={`flex-1 overflow-auto relative z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <Header title={"Rapport des Etudiants"} />
         
-        <div className="p-4">
-          {/* Filtres et recherche */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search size={18} className="absolute top-2.5 left-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher un étudiant..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 p-2 bg-gray-700 border border-gray-600 rounded-md text-white"
-                />
-              </div>
-            </div>
-            <div className="flex items-center">
-              <Filter size={18} className="text-gray-400 mr-2" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="p-2 bg-gray-700 border border-gray-600 rounded-md text-white"
+        <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`p-4 border-b flex justify-between items-center ${darkMode ? 'bg-gray-750 border-gray-700' : 'bg-gray-50 border-gray-200'}`}>
+            <div>
+              <button 
+                className={`mb-2 inline-flex items-center text-sm ${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-800'}`}
+                onClick={() => setSelectedExerciseId(null)}
               >
-                <option value="all">Tous les statuts</option>
-                <option value="Corrigé">Corrigés</option>
-                <option value="En attente">En attente</option>
-              </select>
+                <ArrowLeft size={16} className="mr-1" />
+                Retour à la liste
+              </button>
+              <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{exercice.titre}</h2>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {exercice.sujet} - Date limite: {exercice.date}
+              </p>
+            </div>
+            <div>
+              <span className={`px-3 py-1 text-sm rounded-md mr-2 ${darkMode ? 'bg-blue-900 text-blue-100' : 'bg-blue-100 text-blue-800'}`}>
+                {exercice.nbSoumissions} soumissions
+              </span>
+              <button className={`px-3 py-1 rounded-md ${darkMode ? 'bg-green-600 hover:bg-green-500' : 'bg-green-500 hover:bg-green-600'} text-white`}>
+                Télécharger tout
+              </button>
             </div>
           </div>
           
-          {/* Tableau des rapports */}
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-700">
-              <thead className="bg-gray-700">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Étudiant
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Date de remise
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Statut
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Note
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Commentaires
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-gray-800 divide-y divide-gray-700">
-                {filteredReports.length > 0 ? (
-                  filteredReports.map((rapport) => (
-                    <tr key={rapport.id} className="hover:bg-gray-750">
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{rapport.etudiant}</div>
-                        <div className="text-xs text-gray-400">{rapport.email}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                        {rapport.dateRemise}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          rapport.statut === "Corrigé" 
-                            ? "bg-green-900 text-green-100" 
-                            : "bg-yellow-900 text-yellow-100"
-                        }`}>
-                          {rapport.statut}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-300">
-                        {rapport.note}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {rapport.commentaires > 0 ? (
-                          <div className="flex items-center">
-                            <MessageCircle size={16} className="text-blue-400 mr-1" />
-                            <span className="text-sm text-gray-300">{rapport.commentaires}</span>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500">-</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button 
-                            className="p-1.5 text-blue-400 hover:text-blue-300 bg-blue-900 bg-opacity-30 rounded-md"
-                            onClick={() => handleReportView(rapport.id)}
-                            title="Voir le rapport"
-                          >
-                            <Eye size={16} />
-                          </button>
-                          <button 
-                            className="p-1.5 text-green-400 hover:text-green-300 bg-green-900 bg-opacity-30 rounded-md"
-                            onClick={() => handleReportDownload(rapport.id)}
-                            title="Télécharger"
-                          >
-                            <Download size={16} />
-                          </button>
-                          {rapport.statut === "En attente" && (
-                            <button 
-                              className="p-1.5 text-purple-400 hover:text-purple-300 bg-purple-900 bg-opacity-30 rounded-md"
-                              title="Évaluer"
-                            >
-                              <ThumbsUp size={16} />
-                            </button>
+          <div className="p-4">
+            <div className="flex flex-wrap gap-3 mb-4">
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <Search size={18} className={`absolute top-2.5 left-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                  <input
+                    type="text"
+                    placeholder="Rechercher un étudiant..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full pl-10 p-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center">
+                <Filter size={18} className={`mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className={`p-2 rounded-md border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-800'}`}
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="Corrigé">Corrigés</option>
+                  <option value="En attente">En attente</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y">
+                <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <tr>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Étudiant
+                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Date de remise
+                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Statut
+                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Note
+                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Commentaires
+                    </th>
+                    <th className={`px-4 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${darkMode ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'}`}>
+                  {filteredReports.length > 0 ? (
+                    filteredReports.map((rapport) => (
+                      <tr key={rapport.id} className={`${darkMode ? 'hover:bg-gray-750' : 'hover:bg-gray-50'}`}>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rapport.etudiant}</div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{rapport.email}</div>
+                        </td>
+                        <td className={`px-4 py-3 whitespace-nowrap text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {rapport.dateRemise}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            rapport.statut === "Corrigé" 
+                              ? darkMode ? "bg-green-900 text-green-100" : "bg-green-100 text-green-800"
+                              : darkMode ? "bg-yellow-900 text-yellow-100" : "bg-yellow-100 text-yellow-800"
+                          }`}>
+                            {rapport.statut}
+                          </span>
+                        </td>
+                        <td className={`px-4 py-3 whitespace-nowrap text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                          {rapport.note}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {rapport.commentaires > 0 ? (
+                            <div className="flex items-center">
+                              <MessageCircle size={16} className={`${darkMode ? 'text-blue-400' : 'text-blue-500'} mr-1`} />
+                              <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{rapport.commentaires}</span>
+                            </div>
+                          ) : (
+                            <span className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>-</span>
                           )}
-                        </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button 
+                              className={`p-1.5 rounded-md ${darkMode ? 'text-blue-400 hover:text-blue-300 bg-blue-900 bg-opacity-30' : 'text-blue-500 hover:text-blue-600 bg-blue-100'}`}
+                              onClick={() => handleReportView(rapport.id)}
+                              title="Voir le rapport"
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button 
+                              className={`p-1.5 rounded-md ${darkMode ? 'text-green-400 hover:text-green-300 bg-green-900 bg-opacity-30' : 'text-green-500 hover:text-green-600 bg-green-100'}`}
+                              onClick={() => handleReportDownload(rapport.id)}
+                              title="Télécharger"
+                            >
+                              <Download size={16} />
+                            </button>
+                            {rapport.statut === "En attente" && (
+                              <button 
+                                className={`p-1.5 rounded-md ${darkMode ? 'text-purple-400 hover:text-purple-300 bg-purple-900 bg-opacity-30' : 'text-purple-500 hover:text-purple-600 bg-purple-100'}`}
+                                title="Évaluer"
+                              >
+                                <ThumbsUp size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className={`px-4 py-8 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {searchQuery || statusFilter !== 'all' 
+                          ? "Aucun rapport ne correspond aux critères de recherche" 
+                          : "Aucun rapport n'a encore été soumis pour cet exercice"}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
-                      {searchQuery || statusFilter !== 'all' 
-                        ? "Aucun rapport ne correspond aux critères de recherche" 
-                        : "Aucun rapport n'a encore été soumis pour cet exercice"}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-      </div> 
     );
   };
 

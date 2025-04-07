@@ -1,33 +1,52 @@
 import { useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 import SettingSection from "./SettingSection";
 import { Bell } from "lucide-react";
 import ToggleSwitch from "./ToggleSwitch";
 
 const Notifications = () => {
-	const [notifications, setNotifications] = useState({
-		push: true,
-		email: false,
-		sms: true,
-	});
+    const { darkMode } = useTheme();
+    const [notifications, setNotifications] = useState({
+        push: true,
+        email: false,
+        sms: true,
+    });
 
-	return (
-		<SettingSection icon={Bell} title={"Notifications"}>
-			<ToggleSwitch
-				label={"Push Notifications"}
-				isOn={notifications.push}
-				onToggle={() => setNotifications({ ...notifications, push: !notifications.push })}
-			/>
-			<ToggleSwitch
-				label={"Email Notifications"}
-				isOn={notifications.email}
-				onToggle={() => setNotifications({ ...notifications, email: !notifications.email })}
-			/>
-			<ToggleSwitch
-				label={"SMS Notifications"}
-				isOn={notifications.sms}
-				onToggle={() => setNotifications({ ...notifications, sms: !notifications.sms })}
-			/>
-		</SettingSection>
-	);
+    const toggleNotification = (type) => {
+        setNotifications(prev => ({
+            ...prev,
+            [type]: !prev[type]
+        }));
+    };
+
+    return (
+        <SettingSection 
+            icon={Bell} 
+            title="Notifications"
+            darkMode={darkMode}
+        >
+            <div className="space-y-4">
+                <ToggleSwitch
+                    label="Push Notifications"
+                    isOn={notifications.push}
+                    onToggle={() => toggleNotification('push')}
+                    darkMode={darkMode}
+                />
+                <ToggleSwitch
+                    label="Email Notifications"
+                    isOn={notifications.email}
+                    onToggle={() => toggleNotification('email')}
+                    darkMode={darkMode}
+                />
+                <ToggleSwitch
+                    label="SMS Notifications"
+                    isOn={notifications.sms}
+                    onToggle={() => toggleNotification('sms')}
+                    darkMode={darkMode}
+                />
+            </div>
+        </SettingSection>
+    );
 };
+
 export default Notifications;

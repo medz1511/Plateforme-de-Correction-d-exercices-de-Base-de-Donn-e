@@ -14,7 +14,7 @@ import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
 import AjoutExercice from "./pages/AjoutExercice";
 import Visualisation from "./pages/Dashboard-Etudiant";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-
+import OAuthCallback from "./pages/OAuthCallback";
 // Composant pour les routes protégées
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
@@ -59,7 +59,7 @@ function AppRoutes() {
           {/* Routes publiques */}
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
-          
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
           {/* Routes pour les étudiants */}
           <Route 
             path="/dahboard-etudiant" 

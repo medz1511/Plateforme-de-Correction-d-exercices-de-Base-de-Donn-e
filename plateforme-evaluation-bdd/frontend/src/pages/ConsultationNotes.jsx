@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
-import GradeDistribution from "../components/consultation/GradeDistribution";
-import ExercisePerformance from "../components/consultation/ExercisePerformance";
 import SubmissionsTable from "../components/consultation/SubmissionsTable";
 
 const ConsultationNotes = () => {
@@ -116,10 +114,6 @@ const ConsultationNotes = () => {
 					/>
 				</motion.div>
 
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
-					<ExercisePerformance loading={loading} />
-					<GradeDistribution loading={loading} />
-				</div>
 
 				<SubmissionsTable
 					submissions={submissions}

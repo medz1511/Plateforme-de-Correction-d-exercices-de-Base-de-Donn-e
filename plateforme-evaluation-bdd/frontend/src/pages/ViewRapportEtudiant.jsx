@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Download, ThumbsUp, MessageCircle, Filter, Search, ArrowLeft } from 'lucide-react';
+import { Eye, Download, MessageCircle, Filter, Search, ArrowLeft } from 'lucide-react';
+import Header from '../components/common/Header';
 
 const ViewRapportEtudiant = () => {
   // État pour stocker l'exercice sélectionné
@@ -243,14 +244,7 @@ const ViewRapportEtudiant = () => {
                           >
                             <Download size={16} />
                           </button>
-                          {rapport.statut === "En attente" && (
-                            <button 
-                              className="p-1.5 text-purple-400 hover:text-purple-300 bg-purple-900 bg-opacity-30 rounded-md"
-                              title="Évaluer"
-                            >
-                              <ThumbsUp size={16} />
-                            </button>
-                          )}
+                          {/* Le bouton ThumbsUp/Like a été supprimé ici */}
                         </div>
                       </td>
                     </tr>

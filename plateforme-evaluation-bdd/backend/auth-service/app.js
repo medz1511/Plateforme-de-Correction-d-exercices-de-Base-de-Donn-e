@@ -1,28 +1,20 @@
+require('dotenv').config();
 const express = require('express');
-const { Sequelize } = require('sequelize');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Connexion à PostgreSQL
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
-    logging: false,
+// Route de base
+app.get('/api/auth', (req, res) => {
+    res.send('Bienvenue sur notre API AUTH !');
 });
 
-sequelize.authenticate()
-    .then(() => console.log('Connected to PostgreSQL'))
-    .catch(err => console.error('Could not connect to PostgreSQL', err));
+// Importer les routes
 
-// Routes
-app.use('/api/auth', authRoutes);
-
-// Démarrer le serveur
+// Ouvrir Fermer Periode Parrainage
+// const periodeRoutes = require('./routes/periodeRoutes');
+// app.use('/api/periode', periodeRoutes);
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Auth service running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Serveur lancé sur le port http://localhost:${PORT}`));

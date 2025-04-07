@@ -4,15 +4,14 @@ import StatCard from "../components/common/StatCard";
 import { FileText, PlusCircle, Edit, CheckCircle, X, Eye, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import CorrectionModelForm from "../components/correction/CorrectionModelForm";
-import { useTheme } from "../context/ThemeContext";
+import CorrectionModelsTable from "../components/correction/CorrectionModelsTable";
 
 const CorrectionModelsPage = () => {
-    const { darkMode, toggleTheme } = useTheme();
     const [showAddModal, setShowAddModal] = useState(false);
     const [showPdfViewer, setShowPdfViewer] = useState(false);
     const [selectedExercise, setSelectedExercise] = useState(null);
     const [selectedPdf, setSelectedPdf] = useState(null);
-    const [models, setModels] = useState([]);
+    const [models, setModels] = useState([]); 
 
     useEffect(() => {
         const dummyModels = [
@@ -28,22 +27,19 @@ const CorrectionModelsPage = () => {
             name: "Total des modèles",
             value: models.length.toString(),
             icon: FileText,
-            color: darkMode ? "#8183f4" : "#6366F1",
-            textColor: darkMode ? "text-gray-100" : "text-gray-900"
+            color: "#4A90E2",
         },
         {
             name: "Exercices couverts",
             value: [...new Set(models.map(model => model.exerciseTitle))].length.toString(),
             icon: CheckCircle,
-            color: darkMode ? "#34D399" : "#10B981",
-            textColor: darkMode ? "text-gray-100" : "text-gray-900"
+            color: "#2ECC71",
         },
         {
             name: "Modèles actifs",
             value: models.filter(model => model.status === "Actif").length.toString(),
             icon: CheckCircle,
-            color: darkMode ? "#34D399" : "#10B981",
-            textColor: darkMode ? "text-gray-100" : "text-gray-900"
+            color: "#2ECC71",
         },
     ];
 
@@ -91,39 +87,22 @@ const CorrectionModelsPage = () => {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className={`p-6 w-full min-h-screen ${darkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50 text-gray-900'} transition-colors duration-300`}
+            exit={{ opacity: 0 }}
+            className="p-6 w-full min-h-screen bg-gray-900 text-white"
         >
-            <Header title="Modèles de correction" darkMode={darkMode}>
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={toggleTheme}
-                        className={`px-4 py-2 rounded-md flex items-center gap-2 transition-colors duration-300 ${
-                            darkMode 
-                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                                : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800'
-                        }`}
-                    >
-                        {darkMode ? (
-                            <>
-                                <span>Mode Clair</span>
-                                <span>☀️</span>
-                            </>
-                        ) : (
-                            <>
-                                <span>Mode Sombre</span>
-                                <span>🌙</span>
-                            </>
-                        )}
-                    </button>
+            <Header
+                title="Modèles de correction"
+                description="Gérez les modèles de correction pour vos exercices"
+                actions={
                     <button
                         onClick={handleAddNewModel}
-                        className={`flex items-center gap-2 py-2 px-4 rounded-lg transition-colors ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
                     >
                         <PlusCircle size={18} />
                         Ajouter un modèle
                     </button>
-                </div>
-            </Header>
+                }
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 {stats.map((stat, index) => (
@@ -133,85 +112,80 @@ const CorrectionModelsPage = () => {
                         value={stat.value}
                         icon={stat.icon}
                         color={stat.color}
-                        darkMode={darkMode}
-                        textColor={stat.textColor}
                     />
                 ))}
             </div>
 
-            <div className={`mt-8 rounded-xl p-6 ${darkMode ? 'bg-gray-800' : 'bg-white shadow'} transition-colors duration-300`}>
-                <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
-                    Modèles de correction par exercice
-                </h2>
-                
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                                <th className={`text-left p-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>Exercice</th>
-                                <th className={`text-left p-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>Statut</th>
-                                <th className={`text-left p-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>Dernière mise à jour</th>
-                                <th className={`text-right p-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {models.map((model) => (
-                                <tr key={model.id} className={`border-b ${darkMode ? 'border-gray-700 hover:bg-gray-700/50' : 'border-gray-200 hover:bg-gray-50'} transition-colors duration-200`}>
-                                    <td className={`p-3 ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{model.exerciseTitle}</td>
-                                    <td className="p-3">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                            model.status === "Actif" 
-                                                ? darkMode ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-800"
-                                                : darkMode ? "bg-yellow-500/20 text-yellow-400" : "bg-yellow-100 text-yellow-800"
-                                        }`}>
-                                            {model.status}
-                                        </span>
-                                    </td>
-                                    <td className={`p-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{model.lastUpdate}</td>
-                                    <td className="p-3 text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <button 
-                                                onClick={() => handleViewPdf(model)}
-                                                className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} text-blue-400 transition-colors`}
-                                                title="Visualiser le modèle"
-                                            >
-                                                <Eye size={18} />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleEditModel(model)}
-                                                className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} text-yellow-500 transition-colors`}
-                                                title="Modifier le modèle"
-                                            >
-                                                <Edit size={18} />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDeleteModel(model.id)}
-                                                className={`p-2 rounded-full hover:${darkMode ? 'bg-gray-700' : 'bg-gray-200'} text-red-500 transition-colors`}
-                                                title="Supprimer le modèle"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        </div>
-                                    </td>
+            <div className="mt-8 grid grid-cols-1 gap-6">
+                <div className="bg-gray-800 rounded-xl p-6">
+                    <h2 className="text-xl font-semibold mb-4">Modèles de correction par exercice</h2>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr className="border-b border-gray-700">
+                                    <th className="text-left p-3">Exercice</th>
+                                    <th className="text-left p-3">Statut</th>
+                                    <th className="text-left p-3">Dernière mise à jour</th>
+                                    <th className="text-right p-3">Actions</th>
                                 </tr>
-                            ))}
-                            {models.length === 0 && (
-                                <tr>
-                                    <td colSpan="4" className={`p-3 text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        Aucun modèle de correction n'est disponible
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {models.map((model) => (
+                                    <tr key={model.id} className="border-b border-gray-700 hover:bg-gray-700/50">
+                                        <td className="p-3">{model.exerciseTitle}</td>
+                                        <td className="p-3">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${
+                                                model.status === "Actif" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"
+                                            }`}>
+                                                {model.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-3">{model.lastUpdate}</td>
+                                        <td className="p-3 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <button 
+                                                    onClick={() => handleViewPdf(model)}
+                                                    className="p-1 rounded hover:bg-gray-600 text-blue-400 transition-colors"
+                                                    title="Visualiser le modèle"
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEditModel(model)}
+                                                    className="p-1 rounded hover:bg-gray-600 text-yellow-400 transition-colors"
+                                                    title="Modifier le modèle"
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteModel(model.id)}
+                                                    className="p-1 rounded hover:bg-gray-600 text-red-400 transition-colors"
+                                                    title="Supprimer le modèle"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {models.length === 0 && (
+                                    <tr>
+                                        <td colSpan="4" className="p-3 text-center text-gray-400">
+                                            Aucun modèle de correction n'est disponible
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
             {showAddModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-3xl transition-colors duration-300`}>
+                    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-4xl">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            <h2 className="text-xl font-semibold">
                                 {selectedExercise && selectedExercise.id
                                     ? `Modifier le modèle pour ${selectedExercise.title}`
                                     : "Ajouter un nouveau modèle de correction"}
@@ -221,7 +195,7 @@ const CorrectionModelsPage = () => {
                                     setShowAddModal(false);
                                     setSelectedExercise(null);
                                 }}
-                                className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'} transition-colors`}
+                                className="text-gray-400 hover:text-white transition-colors"
                             >
                                 <X size={24} />
                             </button>
@@ -235,7 +209,6 @@ const CorrectionModelsPage = () => {
                             exerciseId={selectedExercise?.id}
                             initialData={selectedExercise && selectedExercise.id ? 
                                 models.find(m => m.id === selectedExercise.id) : null}
-                            darkMode={darkMode}
                         />
                     </div>
                 </div>
@@ -243,9 +216,9 @@ const CorrectionModelsPage = () => {
 
             {showPdfViewer && selectedPdf && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-5xl h-4/5 flex flex-col transition-colors duration-300`}>
+                    <div className="bg-gray-800 rounded-xl p-6 w-full max-w-5xl h-4/5 flex flex-col">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                            <h2 className="text-xl font-semibold">
                                 Modèle de correction pour {selectedPdf.exerciseTitle}
                             </h2>
                             <button 
@@ -253,12 +226,12 @@ const CorrectionModelsPage = () => {
                                     setShowPdfViewer(false);
                                     setSelectedPdf(null);
                                 }}
-                                className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-800'} transition-colors`}
+                                className="text-gray-400 hover:text-white transition-colors"
                             >
                                 <X size={24} />
                             </button>
                         </div>
-                        <div className={`flex-1 rounded-lg overflow-hidden ${darkMode ? 'bg-gray-900' : 'bg-gray-100'} transition-colors duration-300`}>
+                        <div className="flex-1 bg-gray-900 rounded-lg overflow-hidden">
                             <iframe 
                                 src={selectedPdf.pdfUrl} 
                                 className="w-full h-full"

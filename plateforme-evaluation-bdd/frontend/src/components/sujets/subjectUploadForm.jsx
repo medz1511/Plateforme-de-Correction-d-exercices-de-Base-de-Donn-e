@@ -1,23 +1,23 @@
 import { useState } from "react";
-import { useTheme } from "@/context/ThemeContext"; // ou '../context/ThemeContext'
 
 const SubjectUploadForm = ({ onClose }) => {
-    const { darkMode } = useTheme();
-    const [file, setFile] = useState(null);
-    const [errorMessage, setErrorMessage] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
+    const [file, setFile] = useState(null); // Gérer le fichier sélectionné
+    const [errorMessage, setErrorMessage] = useState(""); // Gérer les messages d'erreur
+    const [successMessage, setSuccessMessage] = useState(""); // Gérer le message de succès
 
+    // Gérer le changement de fichier
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         if (selectedFile && selectedFile.type === "application/pdf") {
             setFile(selectedFile);
-            setErrorMessage("");
+            setErrorMessage(""); // Réinitialiser les messages d'erreur si le fichier est valide
         } else {
             setErrorMessage("Veuillez sélectionner un fichier au format PDF.");
-            setFile(null);
+            setFile(null); // Réinitialiser le fichier si le format est incorrect
         }
     };
 
+    // Soumettre le fichier
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!file) {
@@ -25,67 +25,49 @@ const SubjectUploadForm = ({ onClose }) => {
             return;
         }
 
+        // Logique pour soumettre le fichier (par exemple, envoi au backend)
         console.log("Soumettre le fichier PDF:", file.name);
+        
+        // Simulation de soumission réussie
         setSuccessMessage("Votre devoir a été soumis avec succès !");
-        setFile(null);
-        setErrorMessage("");
+        setFile(null); // Réinitialiser le fichier après soumission
+        setErrorMessage(""); // Réinitialiser les messages d'erreur
 
+        // Fermer la modal après soumission
         setTimeout(() => {
             onClose();
         }, 2000);
     };
 
-    // Classes dynamiques
-    const labelClasses = `block mb-1 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`;
-    const inputClasses = `w-full p-2 rounded-lg border ${
-        darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'
-    }`;
-    const cancelButtonClasses = `px-4 py-2 rounded-lg ${
-        darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
-    } text-white transition-colors`;
-    const submitButtonClasses = `px-4 py-2 rounded-lg ${
-        darkMode ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-500 hover:bg-blue-600'
-    } text-white transition-colors`;
-
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="mb-4">
-                <label htmlFor="subjectFile" className={labelClasses}>
-                    Choisir un fichier PDF
-                </label>
+                <label htmlFor="subjectFile" className="block text-white">Choisir un fichier PDF</label>
                 <input
                     id="subjectFile"
                     type="file"
                     accept="application/pdf"
                     onChange={handleFileChange}
-                    className={inputClasses}
+                    className="w-full p-2 rounded-lg border border-gray-300"
                     required
                 />
             </div>
 
-            {/* Messages d'état */}
-            {errorMessage && (
-                <p className={`${darkMode ? 'text-red-400' : 'text-red-600'}`}>
-                    {errorMessage}
-                </p>
-            )}
-            {successMessage && (
-                <p className={`${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                    {successMessage}
-                </p>
-            )}
+            {/* Affichage des messages d'erreur ou de succès */}
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+            {successMessage && <p className="text-green-500">{successMessage}</p>}
 
             <div className="flex justify-end gap-2">
                 <button
                     type="button"
                     onClick={onClose}
-                    className={cancelButtonClasses}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-lg"
                 >
                     Annuler
                 </button>
                 <button
                     type="submit"
-                    className={submitButtonClasses}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg"
                 >
                     Soumettre
                 </button>

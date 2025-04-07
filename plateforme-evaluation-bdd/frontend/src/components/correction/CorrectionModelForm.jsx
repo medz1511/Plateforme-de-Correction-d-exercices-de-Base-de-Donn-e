@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { Upload, X, Save } from "lucide-react";
-import { useTheme } from '@/context/ThemeContext';
 
-const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData = null, darkMode }) => {
+const CorrectionModelForm = ({ onClose, exerciseId = null }) => {
     const [formData, setFormData] = useState({
-        name: initialData?.name || "",
-        description: initialData?.description || "",
-        exerciseId: exerciseId || initialData?.exerciseId || "",
+        name: "",
+        description: "",
+        exerciseId: exerciseId || "",
         file: null,
-        fileName: initialData?.fileName || "",
-        weight: initialData?.weight || 100,
-        isDefault: initialData?.isDefault || false,
+        fileName: "",
+        weight: 100, // Poids dans l'évaluation (en pourcentage)
+        isDefault: false,
     });
     
     const [exercises, setExercises] = useState([]);
     const [dragActive, setDragActive] = useState(false);
     
+    // Charger les exercices disponibles
     useEffect(() => {
         // En production, ce serait un appel API
         setExercises([
@@ -89,24 +89,18 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
     
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        // En production, vous feriez un appel API pour sauvegarder le modèle
+        console.log("Submitting model:", formData);
+        // Simulation d'un succès
+        alert("Modèle de correction ajouté avec succès!");
+        onClose();
     };
-    
-    // Classes CSS dynamiques
-    const inputClasses = `w-full ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'} border rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500`;
-    const labelClasses = `block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`;
-    const dropzoneClasses = `border-2 border-dashed rounded-lg p-8 text-center ${
-        dragActive 
-            ? `${darkMode ? 'border-blue-500 bg-blue-900 bg-opacity-10' : 'border-blue-400 bg-blue-50'}` 
-            : `${darkMode ? 'border-gray-600' : 'border-gray-300'}`
-    }`;
-    const filePreviewClasses = `flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700'}`;
     
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className={labelClasses}>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
                         Nom du modèle
                     </label>
                     <input
@@ -114,21 +108,21 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className={inputClasses}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Ex: Modèle standard SQL"
                         required
                     />
                 </div>
                 
                 <div>
-                    <label className={labelClasses}>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
                         Exercice associé
                     </label>
                     <select
                         name="exerciseId"
                         value={formData.exerciseId}
                         onChange={handleChange}
-                        className={inputClasses}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:ring-blue-500 focus:border-blue-500"
                         required
                         disabled={exerciseId !== null}
                     >
@@ -143,7 +137,7 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
             </div>
             
             <div>
-                <label className={labelClasses}>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                     Description
                 </label>
                 <textarea
@@ -151,17 +145,19 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                     value={formData.description}
                     onChange={handleChange}
                     rows="3"
-                    className={inputClasses}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Description du modèle de correction..."
                 ></textarea>
             </div>
             
             <div>
-                <label className={labelClasses}>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
                     Fichier de correction (PDF)
                 </label>
                 <div 
-                    className={dropzoneClasses}
+                    className={`border-2 border-dashed rounded-lg p-8 text-center ${
+                        dragActive ? "border-blue-500 bg-blue-900 bg-opacity-10" : "border-gray-600"
+                    }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -170,11 +166,11 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                     {!formData.file ? (
                         <>
                             <div className="flex flex-col items-center justify-center">
-                                <Upload className={`mx-auto h-12 w-12 mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                                <p className={`mb-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                                <p className="mb-2 text-sm text-gray-400">
                                     <span className="font-semibold">Cliquez pour télécharger</span> ou glissez-déposez
                                 </p>
-                                <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>PDF (MAX. 10MB)</p>
+                                <p className="text-xs text-gray-500">PDF (MAX. 10MB)</p>
                             </div>
                             <input
                                 id="file-upload"
@@ -185,18 +181,18 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                             />
                             <label
                                 htmlFor="file-upload"
-                                className={`mt-4 inline-flex items-center px-4 py-2 ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg cursor-pointer transition-colors`}
+                                className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer"
                             >
                                 Parcourir les fichiers
                             </label>
                         </>
                     ) : (
-                        <div className={filePreviewClasses}>
-                            <span>{formData.fileName}</span>
+                        <div className="flex items-center justify-between bg-gray-700 p-3 rounded-lg">
+                            <span className="text-gray-200">{formData.fileName}</span>
                             <button
                                 type="button"
                                 onClick={removeFile}
-                                className={`${darkMode ? 'text-red-400 hover:text-red-500' : 'text-red-500 hover:text-red-600'} transition-colors`}
+                                className="text-red-400 hover:text-red-500"
                             >
                                 <X size={20} />
                             </button>
@@ -207,7 +203,7 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className={labelClasses}>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">
                         Poids dans l'évaluation (%)
                     </label>
                     <input
@@ -217,7 +213,7 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                         onChange={handleChange}
                         min="1"
                         max="100"
-                        className={inputClasses}
+                        className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2.5 text-white focus:ring-blue-500 focus:border-blue-500"
                     />
                 </div>
                 
@@ -228,28 +224,28 @@ const CorrectionModelForm = ({ onClose, onSubmit, exerciseId = null, initialData
                         name="isDefault"
                         checked={formData.isDefault}
                         onChange={handleChange}
-                        className={`w-4 h-4 ${darkMode ? 'text-blue-500 bg-gray-700 border-gray-600' : 'text-blue-600 bg-white border-gray-300'} rounded focus:ring-blue-500`}
+                        className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-600"
                     />
                     <label
                         htmlFor="default-model"
-                        className={`ml-2 text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}
+                        className="ml-2 text-sm font-medium text-gray-300"
                     >
                         Définir comme modèle par défaut pour cet exercice
                     </label>
                 </div>
             </div>
             
-            <div className={`flex justify-end space-x-3 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-700">
                 <button
                     type="button"
                     onClick={onClose}
-                    className={`px-4 py-2 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} text-gray-900 rounded-lg transition-colors`}
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg"
                 >
                     Annuler
                 </button>
                 <button
                     type="submit"
-                    className={`flex items-center gap-2 px-4 py-2 ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white rounded-lg transition-colors`}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
                 >
                     <Save size={18} />
                     Enregistrer

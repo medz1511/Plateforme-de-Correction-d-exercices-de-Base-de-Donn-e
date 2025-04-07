@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Download, Eye, UploadCloud } from "lucide-react";
-import { useTheme } from "@/context/ThemeContext"; // ou '../context/ThemeContext'
 
 const SubjectsModelsTable = () => {
-    const { darkMode } = useTheme();
     const [subjects, setSubjects] = useState([]);
     const [selectedFile, setSelectedFile] = useState(null);
     const fileInputRef = useRef(null);
 
+    // Simuler un appel API pour récupérer les sujets déposés
     useEffect(() => {
         const fetchSubjects = async () => {
             const fakeData = [
@@ -16,9 +15,11 @@ const SubjectsModelsTable = () => {
             ];
             setSubjects(fakeData);
         };
+
         fetchSubjects();
     }, []);
 
+    // Gérer la sélection d'un fichier
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file && file.type === "application/pdf") {
@@ -28,25 +29,14 @@ const SubjectsModelsTable = () => {
         }
     };
 
-    // Classes dynamiques
-    const containerClasses = `p-6 rounded-xl shadow-lg transition-colors duration-300 ${
-        darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-    }`;
-
-    const tableHeaderClasses = `${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'}`;
-    const tableRowClasses = `border-b ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`;
-    const iconClasses = "transition cursor-pointer hover:opacity-80";
-
     return (
-        <div className={containerClasses}>
-            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                📜 Sujets déposés
-            </h2>
+        <div className="bg-gray-900 text-white p-6 rounded-xl shadow-lg">
+            <h2 className="text-xl font-semibold mb-4 text-gray-200">📜 Sujets déposés</h2>
 
             <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                     <thead>
-                        <tr className={`${tableHeaderClasses} border-b`}>
+                        <tr className="bg-gray-800 border-b border-gray-700">
                             <th className="p-4 text-left">Titre</th>
                             <th className="p-4 text-left">Date</th>
                             <th className="p-4 text-center">Actions</th>
@@ -55,19 +45,19 @@ const SubjectsModelsTable = () => {
                     <tbody>
                         {subjects.length > 0 ? (
                             subjects.map((subject) => (
-                                <tr key={subject.id} className={`${tableRowClasses} transition-colors duration-200`}>
+                                <tr key={subject.id} className="border-b border-gray-700 hover:bg-gray-800 transition">
                                     <td className="p-4">{subject.title}</td>
                                     <td className="p-4">{subject.date}</td>
                                     <td className="p-4 text-center flex justify-center gap-6">
                                         <a href={subject.fileUrl} target="_blank" rel="noopener noreferrer">
-                                            <Eye size={22} className={`text-blue-400 ${iconClasses}`} />
+                                            <Eye size={22} className="text-blue-400 hover:text-blue-500 transition cursor-pointer" />
                                         </a>
                                         <a href={subject.fileUrl} download>
-                                            <Download size={22} className={`text-green-400 ${iconClasses}`} />
+                                            <Download size={22} className="text-green-400 hover:text-green-500 transition cursor-pointer" />
                                         </a>
                                         <UploadCloud 
                                             size={22} 
-                                            className={`text-yellow-400 ${iconClasses}`} 
+                                            className="text-yellow-400 hover:text-yellow-500 transition cursor-pointer" 
                                             onClick={() => fileInputRef.current.click()} 
                                         />
                                         <input 
@@ -82,9 +72,7 @@ const SubjectsModelsTable = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="3" className={`p-4 text-center italic ${
-                                    darkMode ? 'text-gray-400' : 'text-gray-500'
-                                }`}>
+                                <td colSpan="3" className="p-4 text-center text-gray-400 italic">
                                     Aucun sujet déposé.
                                 </td>
                             </tr>
@@ -94,7 +82,7 @@ const SubjectsModelsTable = () => {
             </div>
 
             {selectedFile && (
-                <p className={`mt-4 text-center ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <p className="mt-4 text-center text-gray-300">
                     📄 Fichier sélectionné : <span className="text-green-400 font-semibold">{selectedFile}</span>
                 </p>
             )}

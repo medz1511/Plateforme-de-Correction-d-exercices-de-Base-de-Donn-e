@@ -20,7 +20,7 @@ import {
       // Items pour les étudiants
       { name: "Dashboard ", icon: BarChart2, color: "#6366f1", href: "/dahboard-etudiant", roles: ["etudiant"] },
       { name: "Mes notes", icon: ClipboardCheck, color: "#10B981", href: "/notes-etudiant", roles: ["etudiant"] },
-      { name: "Travail à faire", icon: ClipboardList, color: "#F59E0B", href: "/sujets-deposes", roles: ["etudiant"] },
+      { name: "Mes Devoirs", icon: ClipboardList, color: "#F59E0B", href: "/devoirs", roles: ["etudiant"] },
       
       // Items pour tous les rôles
       { name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings", roles: ["professeur", "etudiant"] },
@@ -33,7 +33,7 @@ import {
   
       // Filtrer les items du sidebar selon le rôle de l'utilisateur
       const filteredItems = SIDEBAR_ITEMS.filter(item => 
-          item.roles.includes(currentUser?.role || "etudiant")
+          item.roles.includes(currentUser?.role || "Etudiant")
       );
   
       const handleLogout = async () => {
@@ -55,7 +55,7 @@ import {
                               exit={{ opacity: 0 }}
                               className="text-xl font-bold text-white"
                           >
-                              Lafinal
+                              KOUNAMA 
                           </motion.div>
                       )}
                       <motion.button

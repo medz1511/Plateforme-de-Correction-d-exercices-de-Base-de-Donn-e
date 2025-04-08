@@ -1,57 +1,25 @@
 import { motion } from "framer-motion";
-import { FileText, CheckCircle, Upload, X, RefreshCw, Eye, Download, Calendar, AlertCircle, CheckSquare } from "lucide-react";
-import { useState, useRef } from "react";
+import { FileText, CheckCircle, Upload, X, RefreshCw, Eye, Download, AlertCircle, Calendar, CheckSquare } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
 import { useTheme } from "../context/ThemeContext";
+import submissionService  from "../components/services/submissionService";
+import { useAuth } from "../context/AuthContext";
 
 const AccesSujetsDeposesEtudiant = () => {
     const { darkMode } = useTheme();
-    const subjectStats = {
-        totalSubjects: 25,
-        newSubjectsToday: 3,
-        submittedSubjects: 20,
-    };
+    const { user } = useAuth();
+    const [subjectStats, setSubjectStats] = useState({
+        totalSubjects: 0,
+        newSubjectsToday: 0,
+        submittedSubjects: 0,
+    });
 
-    const deadlineDate = new Date("2025-05-01");
-    const isDeadlinePassed = new Date() > deadlineDate;
-    const baseSubjectUrl = "/api/subjects";
-
-    const [subjects, setSubjects] = useState([
-        { 
-            id: 1, 
-            title: "Sujet 1", 
-            subject: "Mathématiques", 
-            date: "2025-04-01", 
-            description: "Ce sujet porte sur les équations différentielles et les applications en physique.", 
-            deadline: "2025-04-20",
-            isSubmitted: false, 
-            fileName: "", 
-            pdfUrl: "/path/to/subject1.pdf" 
-        },
-        { 
-            id: 2, 
-            title: "Sujet 2", 
-            subject: "Physique", 
-            date: "2025-04-02", 
-            description: "Analyse des circuits électriques et lois de Kirchhoff.", 
-            deadline: "2025-04-22",
-            isSubmitted: false, 
-            fileName: "", 
-            pdfUrl: "/path/to/subject2.pdf" 
-        },
-        { 
-            id: 3, 
-            title: "Sujet 3", 
-            subject: "Informatique", 
-            date: "2025-04-03", 
-            description: "Programmation orientée objet et conception d'algorithmes.", 
-            deadline: "2025-04-25",
-            isSubmitted: false, 
-            fileName: "", 
-            pdfUrl: "/path/to/subject3.pdf" 
-        },
-    ]);
+    const [subjects, setSubjects] = useState([]);
+    const [submissions, setSubmissions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const fileInputRefs = useRef({});
     const [uploadingSubjectId, setUploadingSubjectId] = useState(null);
@@ -59,6 +27,47 @@ const AccesSujetsDeposesEtudiant = () => {
     const [confirmWithdraw, setConfirmWithdraw] = useState(null);
     const [viewingPdf, setViewingPdf] = useState(null);
     const [viewingSubjectDetails, setViewingSubjectDetails] = useState(null);
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                
+                const subjectsData = await submissionService.getSubjects(user.id);
+                const submissionsData = await submissionService.getStudentSubmissions(user.id);
+                
+                const today = new Date().toISOString().split('T')[0];
+                setSubjectStats({
+                    totalSubjects: subjectsData.subjects.length,
+                    newSubjectsToday: subjectsData.subjects.filter(s => s.date.startsWith(today)).length,
+                    submittedSubjects: submissionsData.length
+                });
+
+                const updatedSubjects = subjectsData.subjects.map(subject => {
+                    const submission = submissionsData.find(s => s.subject_id === subject.id);
+                    return {
+                        ...subject,
+                        isSubmitted: !!submission,
+                        fileName: submission ? submission.original_filename : "",
+                        submissionId: submission ? submission.id : null
+                    };
+                });
+                
+                setSubjects(updatedSubjects);
+                setSubmissions(submissionsData);
+                setLoading(false);
+            } catch (err) {
+                console.error("Erreur lors du chargement des données:", err);
+                setError("Erreur lors du chargement des données. Veuillez réessayer.");
+                setLoading(false);
+            }
+        };
+        
+        if (user && user.id) {
+            fetchData();
+        }
+    }, [user]);
 
     const openFileSelector = (subjectId) => {
         if (fileInputRefs.current[subjectId]) {
@@ -66,7 +75,7 @@ const AccesSujetsDeposesEtudiant = () => {
         }
     };
 
-    const handleFileChange = (subjectId, event) => {
+    const handleFileChange = async (subjectId, event) => {
         const file = event.target.files[0];
         
         if (file) {
@@ -81,12 +90,34 @@ const AccesSujetsDeposesEtudiant = () => {
             }
             
             setFileError("");
-            setSubjects(subjects.map(subject => 
-                subject.id === subjectId 
-                    ? { ...subject, isSubmitted: true, fileName: file.name } 
-                    : subject
-            ));
-            setUploadingSubjectId(null);
+            setSubmitting(true);
+            
+            try {
+                const result = await submissionService.submitAssignment(user.id, subjectId, file);
+                
+                setSubjects(subjects.map(subject => 
+                    subject.id === subjectId 
+                        ? { 
+                            ...subject, 
+                            isSubmitted: true, 
+                            fileName: file.name,
+                            submissionId: result.submissionId
+                        } 
+                        : subject
+                ));
+                
+                setSubjectStats(prev => ({
+                    ...prev,
+                    submittedSubjects: prev.submittedSubjects + 1
+                }));
+                
+            } catch (err) {
+                console.error("Erreur lors de la soumission:", err);
+                setFileError("Erreur lors de l'envoi du fichier. Veuillez réessayer.");
+            } finally {
+                setSubmitting(false);
+                setUploadingSubjectId(null);
+            }
         }
     };
 
@@ -98,13 +129,30 @@ const AccesSujetsDeposesEtudiant = () => {
         setConfirmWithdraw(subjectId);
     };
 
-    const confirmWithdrawSubmission = (subjectId) => {
-        setSubjects(subjects.map(subject => 
-            subject.id === subjectId 
-                ? { ...subject, isSubmitted: false, fileName: "" } 
-                : subject
-        ));
-        setConfirmWithdraw(null);
+    const confirmWithdrawSubmission = async (subjectId) => {
+        const subject = subjects.find(s => s.id === subjectId);
+        if (!subject || !subject.submissionId) return;
+        
+        try {
+            await submissionService.withdrawSubmission(subject.submissionId);
+            
+            setSubjects(subjects.map(subject => 
+                subject.id === subjectId 
+                    ? { ...subject, isSubmitted: false, fileName: "", submissionId: null } 
+                    : subject
+            ));
+            
+            setSubjectStats(prev => ({
+                ...prev,
+                submittedSubjects: Math.max(0, prev.submittedSubjects - 1)
+            }));
+            
+        } catch (err) {
+            console.error("Erreur lors du retrait de la soumission:", err);
+            setError("Erreur lors du retrait de la soumission. Veuillez réessayer.");
+        } finally {
+            setConfirmWithdraw(null);
+        }
     };
 
     const viewSubject = (subjectId) => {
@@ -119,15 +167,24 @@ const AccesSujetsDeposesEtudiant = () => {
         setViewingPdf(subject);
     };
 
-    const downloadSubject = (subjectId) => {
+    const downloadSubject = async (subjectId) => {
         const subject = subjects.find(s => s.id === subjectId);
         if (subject) {
-            const link = document.createElement('a');
-            link.href = subject.pdfUrl;
-            link.download = `${subject.title}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                const response = await fetch(subject.pdfUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${subject.title}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error("Erreur lors du téléchargement:", err);
+                setError("Erreur lors du téléchargement du fichier. Veuillez réessayer.");
+            }
         }
     };
 
@@ -144,6 +201,12 @@ const AccesSujetsDeposesEtudiant = () => {
         return new Date(dateString).toLocaleDateString('fr-FR', options);
     };
 
+    const isDeadlinePassed = (deadlineString) => {
+        const today = new Date();
+        const deadline = new Date(deadlineString);
+        return today > deadline;
+    };
+
     const isDeadlineClose = (deadlineString) => {
         const today = new Date();
         const deadline = new Date(deadlineString);
@@ -151,6 +214,24 @@ const AccesSujetsDeposesEtudiant = () => {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 && diffDays <= 3;
     };
+
+    if (loading) {
+        return (
+            <div className={`flex-1 flex justify-center items-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
+                <p>Chargement des sujets...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className={`flex-1 flex justify-center items-center ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-800'}`}>
+                <div className={`p-4 rounded-lg ${darkMode ? 'bg-red-900 text-white' : 'bg-red-100 text-red-800'}`}>
+                    {error}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`flex-1 overflow-auto relative z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} transition-colors duration-300`}>
@@ -211,7 +292,7 @@ const AccesSujetsDeposesEtudiant = () => {
                                             />
                                             
                                             {/* Cas 1: Sujet non soumis et date limite non dépassée */}
-                                            {!subject.isSubmitted && !isDeadlinePassed && (
+                                            {!subject.isSubmitted && !isDeadlinePassed(subject.deadline) && (
                                                 <div className="flex space-x-2">
                                                     <button
                                                         className={`flex justify-center items-center px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
@@ -240,7 +321,7 @@ const AccesSujetsDeposesEtudiant = () => {
                                             )}
                                             
                                             {/* Cas 2: Sujet soumis mais date limite non dépassée (avec possibilité de remplacer) */}
-                                            {subject.isSubmitted && !isDeadlinePassed && (
+                                            {subject.isSubmitted && !isDeadlinePassed(subject.deadline) && (
                                                 <div className="flex space-x-2">
                                                     <button
                                                         className={`flex justify-center items-center px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
@@ -282,7 +363,7 @@ const AccesSujetsDeposesEtudiant = () => {
                                             )}
                                             
                                             {/* Cas 3: Sujet non soumis et date limite dépassée */}
-                                            {!subject.isSubmitted && isDeadlinePassed && (
+                                            {!subject.isSubmitted && isDeadlinePassed(subject.deadline) && (
                                                 <div className="flex space-x-2">
                                                     <button
                                                         className={`flex justify-center items-center px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
@@ -308,7 +389,7 @@ const AccesSujetsDeposesEtudiant = () => {
                                             )}
                                             
                                             {/* Cas 4: Sujet soumis et date limite dépassée */}
-                                            {subject.isSubmitted && isDeadlinePassed && (
+                                            {subject.isSubmitted && isDeadlinePassed(subject.deadline) && (
                                                 <div className="flex space-x-2">
                                                     <button
                                                         className={`flex justify-center items-center px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
@@ -340,9 +421,9 @@ const AccesSujetsDeposesEtudiant = () => {
                     </table>
                 </motion.div>
 
-                {isDeadlinePassed && (
+                {subjects.some(s => isDeadlinePassed(s.deadline)) && (
                     <div className={`mt-4 p-3 rounded ${darkMode ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-800'}`}>
-                        La date de clôture des dépôts est passée. Vous ne pouvez plus soumettre de nouveaux devoirs.
+                        La date de clôture des dépôts est passée pour certains sujets. Vous ne pouvez plus soumettre de nouveaux devoirs pour ces sujets.
                     </div>
                 )}
 
@@ -510,7 +591,6 @@ const AccesSujetsDeposesEtudiant = () => {
                             </div>
                             
                             <div className="w-full h-5/6 bg-gray-100 rounded">
-                                {/* Simuler un PDF viewer ici */}
                                 <div className="h-full flex items-center justify-center">
                                     <iframe 
                                         src={viewingPdf.pdfUrl} 

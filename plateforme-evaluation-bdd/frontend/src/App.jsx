@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
 import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
+//import AccesSujetsDeposesEtudiant from "./pages/AccesSujetsDeposesEtudiant";
 import NotesEtudiant from "./pages/NotesEtudiant";
 import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
@@ -49,7 +50,7 @@ function AppRoutes() {
           <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
           <Route path="/react-dashboard" element={<ProtectedRoute allowedRoles={['professeur']}><Dashboard /></ProtectedRoute>} />
           <Route path="/ajoutExercice" element={<ProtectedRoute allowedRoles={['professeur']}><AjoutExercice /></ProtectedRoute>} />
-          <Route path="/sujets-deposes" element={<ProtectedRoute allowedRoles={['etudiant']}><AccesSujetsDeposesProf /></ProtectedRoute>} />
+          <Route path="/sujets-deposes" element={<ProtectedRoute allowedRoles={['professeur']}><AccesSujetsDeposesProf /></ProtectedRoute>} />
           <Route path="/consultation-notes" element={<ProtectedRoute allowedRoles={['professeur']}><ConsultationNotes /></ProtectedRoute>} />
           <Route path="/correction-models" element={<ProtectedRoute allowedRoles={['professeur']}><CorrectionModelsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute allowedRoles={['professeur', 'etudiant']}><SettingsPage /></ProtectedRoute>} />

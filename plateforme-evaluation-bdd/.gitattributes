@@ -1,0 +1,12 @@
+* text=auto
+
+# Préserver les fins de ligne LF pour les fichiers de code
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+
+# Empêcher Git de modifier les fichiers node_modules
+node_modules/* binary

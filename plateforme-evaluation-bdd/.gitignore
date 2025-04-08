@@ -1,0 +1,41 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+.pnpm-debug.log
+
+# Frontend build (ajoute ici le dossier de build si tu utilises React, Vue, etc.)
+frontend/build/
+frontend/dist/
+frontend/.env
+
+# Backend build
+backend/dist/
+
+# Fichiers de log
+*.log
+
+# Environnement local
+.env
+.env.local
+.env.*.local
+
+# Dossier de test
+test/
+
+# Docker
+docker-compose.override.yml
+docker-compose.yml
+
+# IDEs et éditeurs
+.vscode/
+.idea/
+
+# OS spécifique
+.DS_Store
+Thumbs.db
+
+# Fichiers de cache
+.cache/
+*.swp

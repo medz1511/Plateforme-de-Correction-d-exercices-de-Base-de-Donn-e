@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
 import { Route, Routes, useLocation, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import Sidebar from "./components/common/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import SettingsPage from "./pages/SettingsPage";
@@ -7,15 +8,19 @@ import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
-import ExerciceEtudiant from "./pages/ExerciceEtudiant";
+import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
 import NotesEtudiant from "./pages/NotesEtudiant";
 import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
 import AjoutExercice from "./pages/AjoutExercice";
 import Visualisation from "./pages/Dashboard-Etudiant";
+<<<<<<< HEAD
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import OAuthCallback from "./pages/OAuthCallback";
 // Composant pour les routes protégées
+=======
+
+>>>>>>> 7aed029054f06fce6a9a892dbbe7c6508c04aae8
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
   const location = useLocation();
@@ -25,11 +30,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    if (currentUser.role === 'etudiant') {
-      return <Navigate to="/dahboard-etudiant" replace />;
-    } else {
-      return <Navigate to="/react-dashboard" replace />;
-    }
+    return <Navigate to={currentUser.role === 'etudiant' ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
   }
 
   return children;
@@ -41,24 +42,14 @@ function AppRoutes() {
   const hideSidebarRoutes = ["/", "/register"];
   const isLoginPage = hideSidebarRoutes.includes(location.pathname);
 
-  const [darkMode, setDarkMode] = useState(localStorage.getItem("theme") === "dark");
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
-
   return (
-    <div className={`min-h-screen ${isLoginPage ? 'flex justify-center items-center' : 'flex bg-black text-gray-100'}`}>
+    <div className={`min-h-screen ${isLoginPage ? 'flex justify-center items-center' : 'flex'}`}>
       {!isLoginPage && <Sidebar />}
       <div className="w-full overflow-y-auto">
         <Routes>
-          {/* Routes publiques */}
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
+<<<<<<< HEAD
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           {/* Routes pour les étudiants */}
           <Route 
@@ -85,83 +76,27 @@ function AppRoutes() {
                 </ProtectedRoute>
               } 
             />
+=======
           
-          {/* Routes pour les professeurs */}
-          <Route 
-              path="/viewRapport" 
-              element={
-                <ProtectedRoute allowedRoles={['professeur']}>
-                  <ViewRapportEtudiant />
-                  </ProtectedRoute>
-                } 
-            />
-          <Route 
-            path="/react-dashboard" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/ajoutExercice" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <AjoutExercice />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/consultation-notes" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <ConsultationNotes />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/correction-models" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur']}>
-                <CorrectionModelsPage />
-              </ProtectedRoute>
-            } 
-          />
+          <Route path="/dahboard-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><Visualisation /></ProtectedRoute>} />
+          <Route path="/viewRapport" element={<ProtectedRoute allowedRoles={['professeur']}><ViewRapportEtudiant /></ProtectedRoute>} />
+          <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
+          <Route path="/react-dashboard" element={<ProtectedRoute allowedRoles={['professeur']}><Dashboard /></ProtectedRoute>} />
+          <Route path="/ajoutExercice" element={<ProtectedRoute allowedRoles={['professeur']}><AjoutExercice /></ProtectedRoute>} />
+          <Route path="/sujets-deposes" element={<ProtectedRoute allowedRoles={['etudiant']}><AccesSujetsDeposesProf /></ProtectedRoute>} />
+          <Route path="/consultation-notes" element={<ProtectedRoute allowedRoles={['professeur']}><ConsultationNotes /></ProtectedRoute>} />
+          <Route path="/correction-models" element={<ProtectedRoute allowedRoles={['professeur']}><CorrectionModelsPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute allowedRoles={['professeur', 'etudiant']}><SettingsPage /></ProtectedRoute>} />
+          <Route path="/connected-accounts" element={<ProtectedRoute allowedRoles={['professeur', 'etudiant']}><ConnectedAccounts /></ProtectedRoute>} />
+>>>>>>> 7aed029054f06fce6a9a892dbbe7c6508c04aae8
           
-        
-        
-          
-          {/* Routes accessibles aux deux rôles */}
-          <Route 
-            path="/settings" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur', 'etudiant']}>
-                <SettingsPage />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/connected-accounts" 
-            element={
-              <ProtectedRoute allowedRoles={['professeur', 'etudiant']}>
-                <ConnectedAccounts />
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Redirection par défaut */}
-          <Route 
-            path="*" 
-            element={
-              currentUser ? (
-                currentUser.role === 'etudiant' ? 
-                  <Navigate to="/dahboard-etudiant" replace /> : 
-                  <Navigate to="/react-dashboard" replace />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            } 
-          />
+          <Route path="*" element={
+            currentUser ? (
+              <Navigate to={currentUser.role === 'etudiant' ? "/dahboard-etudiant" : "/react-dashboard"} replace />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          } />
         </Routes>
       </div>
     </div>
@@ -171,7 +106,9 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ThemeProvider>
+        <AppRoutes />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"createPathParamProxy.d.ts","sourceRoot":"","sources":["../../src/internals/createPathParamProxy.ts"],"names":[],"mappings":"AAAA,KAAK,kBAAkB,GAAG;IACxB,IAAI,MAAM,CAAC;IACX,GAAG,EAAE,GAAG,CAAC;IACT,KAAK,EAAE,GAAG,CAAC;CACZ,CAAC;AAEF;;;;;;;;;;;;GAYG;AACH,wBAAgB,oBAAoB,IAAI,kBAAkB,CAoBzD"}

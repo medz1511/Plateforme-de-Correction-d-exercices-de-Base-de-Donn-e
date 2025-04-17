@@ -1,15 +1,15 @@
 {
   "development": {
-    "username": "postgres",
-    "password": "passer",
-    "database": "data_evaluation",
+    "username": "kounama",
+    "password": "kounama",
+    "database": "plateforme_evaluation",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
-    "username": "postgres",
-    "password": "passer",
-    "database": "data_evaluation",
+    "username": "kounama",
+    "password": "kounama",
+    "database": "plateforme_evaluation_test",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },

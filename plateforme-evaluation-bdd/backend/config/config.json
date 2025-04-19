@@ -1,26 +1,23 @@
 {
   "development": {
-    "username": "kounama",
-    "password": "kounama",
-    "database": "plateforme_evaluation",
+    "username": "root",
+    "password": null,
+    "database": "plateforme_evaluation_db",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "mysql"
   },
   "test": {
-    "username": "kounama",
-    "password": "kounama",
-    "database": "plateforme_evaluation_test",
+    "username": "root",
+    "password": null,
+    "database": "plateforme_evaluation_db",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "mysql"
   },
   "production": {
-    "use_env_variable": "DATABASE_URL",
-    "dialect": "postgres",
-    "dialectOptions": {
-      "ssl": {
-        "require": true,
-        "rejectUnauthorized": false
-      }
-    }
+    "username": "root",
+    "password": null,
+    "database": "plateforme_evaluation_db",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
   }
 }

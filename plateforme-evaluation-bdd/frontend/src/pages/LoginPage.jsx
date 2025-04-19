@@ -4,7 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { BsGithub } from "react-icons/bs";
 import { BsMicrosoft } from "react-icons/bs";
 import { useAuth } from '../context/AuthContext';
-import { loginWithGoogle, loginWithGitHub, loginWithMicrosoft } from '../services/api';
+import { loginWithGoogle, loginWithGitHub, loginWithMicrosoft } from '../services/authService';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');

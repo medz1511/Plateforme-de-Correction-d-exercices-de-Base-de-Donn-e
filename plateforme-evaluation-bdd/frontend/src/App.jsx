@@ -14,7 +14,7 @@ import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
 import AjoutExercice from "./pages/AjoutExercice";
 import Visualisation from "./pages/Dashboard-Etudiant";
-
+// o
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
   const location = useLocation();

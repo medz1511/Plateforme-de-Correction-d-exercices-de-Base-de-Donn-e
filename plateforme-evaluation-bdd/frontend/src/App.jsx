@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
+import OAuthCallback from "./pages/OAuthCallback";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
 import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
@@ -26,7 +27,6 @@ function ProtectedRoute({ children, allowedRoles }) {
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
     return <Navigate to={currentUser.role === 'etudiant' ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
   }
-
   return children;
 }
 
@@ -43,13 +43,13 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/register" element={<Register />} />
-          
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/dahboard-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><Visualisation /></ProtectedRoute>} />
           <Route path="/viewRapport" element={<ProtectedRoute allowedRoles={['professeur']}><ViewRapportEtudiant /></ProtectedRoute>} />
-          <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
           <Route path="/react-dashboard" element={<ProtectedRoute allowedRoles={['professeur']}><Dashboard /></ProtectedRoute>} />
           <Route path="/ajoutExercice" element={<ProtectedRoute allowedRoles={['professeur']}><AjoutExercice /></ProtectedRoute>} />
           <Route path="/sujets-deposes" element={<ProtectedRoute allowedRoles={['etudiant']}><AccesSujetsDeposesProf /></ProtectedRoute>} />
+          <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
           <Route path="/consultation-notes" element={<ProtectedRoute allowedRoles={['professeur']}><ConsultationNotes /></ProtectedRoute>} />
           <Route path="/correction-models" element={<ProtectedRoute allowedRoles={['professeur']}><CorrectionModelsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute allowedRoles={['professeur', 'etudiant']}><SettingsPage /></ProtectedRoute>} />

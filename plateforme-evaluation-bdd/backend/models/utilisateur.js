@@ -7,6 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       email: { type: DataTypes.STRING(255), allowNull: false, unique: true },
       mot_de_passe_hash: { type: DataTypes.STRING(255), allowNull: false },
       role: { type: DataTypes.ENUM('PROFESSEUR', 'ETUDIANT'), allowNull: false },
+      googleId: { type: DataTypes.STRING(100) },
       date_creation: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
       derniere_connexion: { type: DataTypes.DATE }
     }, {

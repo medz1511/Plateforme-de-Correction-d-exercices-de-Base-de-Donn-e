@@ -1,59 +1,52 @@
-// config/passport.js
-require('dotenv').config();
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const GitHubStrategy = require('passport-github2').Strategy;
-const { OIDCStrategy } = require('passport-azure-ad');
-const db = require('../models'); // si tu veux persister l'utilisateur
+const db = require('../models');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
-// Sérialisation/Désérialisation
-passport.serializeUser((user, done) => {
-  done(null, user.id || user);  // ajuster selon ton modèle Utilisateur
-});
-passport.deserializeUser((id, done) => {
-  // si stocké en BDD, faire db.utilisateur.findByPk(id).then(user => done(null, user))
-  done(null, id);
-});
+const JWT_SECRET = process.env.JWT_SECRET;
+const FRONTEND_URL = process.env.FRONTEND_URL; // ex: http://localhost:5173
 
-// Google OAuth2
 passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientID:     process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL
+    callbackURL:  process.env.GOOGLE_REDIRECT_URI
   },
   async (accessToken, refreshToken, profile, done) => {
-    // Optionnel : créer ou récupérer l'utilisateur en BDD
-    // ex: const [user] = await db.utilisateur.findOrCreate({ where:{email: profile.emails[0].value}, defaults:{prenom:profile.name.givenName, nom:profile.name.familyName} });
-    done(null, profile);
+    try {
+      // Cherche ou crée l'utilisateur
+      let user = await db.utilisateur.findOne({ where: { email: profile.emails[0].value } });
+      if (!user) {
+        const randomPass = crypto.randomBytes(16).toString('hex');
+        const hash       = await bcrypt.hash(randomPass, 10);
+        const firstUser = await db.utilisateur.count();
+        const role = firstUser === 0 ? 'PROFESSEUR' : 'ETUDIANT';
+        user = await db.utilisateur.create({
+          prenom: profile.name.givenName,
+          nom: profile.name.familyName,
+          email: profile.emails[0].value,
+          mot_de_passe_hash: hash,
+          role,
+          googleId: profile.id
+        });
+      }
+      return done(null, user);
+    } catch (err) {
+      done(err);
+    }
   }
 ));
 
-// GitHub OAuth2
-passport.use(new GitHubStrategy({
-    clientID: process.env.GITHUB_CLIENT_ID,
-    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: process.env.GITHUB_CALLBACK_URL
-  },
-  async (accessToken, refreshToken, profile, done) => {
-    // idem : trouver/créer user
-    done(null, profile);
+// Sérialisation (on ne stocke pas le mot de passe !)
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await db.utilisateur.findByPk(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
   }
-));
-
-// Microsoft Azure AD OpenID Connect
-// passport.use(new OIDCStrategy({
-//     identityMetadata: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID}/v2.0/.well-known/openid-configuration`,
-//     clientID: process.env.AZURE_CLIENT_ID,
-//     clientSecret: process.env.AZURE_CLIENT_SECRET,
-//     responseType: 'code',
-//     responseMode: 'form_post',
-//     redirectUrl: process.env.MICROSOFT_CALLBACK_URL,
-//     scope: ['profile', 'offline_access', 'openid', 'email']
-//   },
-//   (iss, sub, profile, accessToken, refreshToken, params, done) => {
-//     // profile contient les infos de l'utilisateur
-//     done(null, profile);
-//   }
-// ));
-
-module.exports = passport;
+});

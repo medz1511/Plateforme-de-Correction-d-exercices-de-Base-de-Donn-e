@@ -5,6 +5,7 @@ import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
 import { useTheme } from "../context/ThemeContext";
 import ClickableText from "../context/ClickableText";
+import { useAuth } from "../context/AuthContext";
 import { fetchSoumissionsByEtu } from "../services/soumissionService";
 
 const getFileType = (filePath) => {
@@ -14,9 +15,11 @@ const getFileType = (filePath) => {
   return 'unknown';
 };
 
-const savedUser = JSON.parse(localStorage.getItem('user'));
 
-const NoteEtudiant = ({ etudiantId = savedUser.id }) => {
+const NoteEtudiant = () => {
+  const savedUser = JSON.parse(localStorage.getItem('user'));
+  console.log(savedUser);
+  const etudiantId = savedUser.id
   const { darkMode } = useTheme();
   const [devoirs, setDevoirs] = useState([]);
   const [loading, setLoading] = useState(true);

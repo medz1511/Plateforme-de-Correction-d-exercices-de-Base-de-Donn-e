@@ -1,4 +1,4 @@
-import { CheckCircle, FileText } from "lucide-react";
+import { CheckCircle, FileText,X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import Header from "../components/common/Header";
@@ -7,7 +7,7 @@ import { useTheme } from "../context/ThemeContext";
 import ClickableText from "../context/ClickableText";
 import { useAuth } from "../context/AuthContext";
 import { fetchSoumissionsByEtu } from "../services/soumissionService";
-
+const API_BASE = import.meta.env.VITE_API_URL || '';
 const getFileType = (filePath) => {
   const ext = filePath.split('.').pop().toLowerCase();
   if (['pdf'].includes(ext)) return 'pdf';
@@ -120,19 +120,21 @@ const NoteEtudiant = () => {
           </table>
         </div>
 
-        {showPdfViewer && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded w-11/12 h-5/6 relative p-4">
-              <button
-                className="absolute top-3 right-3 text-white bg-red-500 hover:bg-red-400 rounded px-3 py-1"
-                onClick={() => setShowPdfViewer(false)}
-              >
-                Fermer
-              </button>
-              <embed src={selectedPdf} type="application/pdf" className="w-full h-full" />
-            </div>
-          </div>
-        )}
+        {showPdfViewer && selectedPdf && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                  <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-5xl h-4/5 transition-colors duration-300`}>
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-semibold">{selectedPdf.exerciseTitle}</h2>
+                      <button onClick={() => setShowPdfViewer(false)}><X size={24} /></button>
+                    </div>
+                    <iframe
+                      src={`${API_BASE}${selectedPdf.pdfUrl}`}
+                      className="w-full h-full rounded"
+                      title={selectedPdf.exerciseTitle}
+                    />
+                  </div>
+                </div>
+              )}
       </main>
     </div>
   );

@@ -98,7 +98,7 @@ router.put(
   async (req, res) => {
     try {
       const filePath = req.file ? `/uploads/soumissions/${req.file.filename}` : null;
-      const data = { chemin_fichier_pdf: filePath, etat: 'DEPOT' };
+      const data = { chemin_fichier_pdf: filePath, etat: 'SOUMIS' };
       await soumService.update(req.params.id, data);
       res.json({ success: true });
     } catch (err) {

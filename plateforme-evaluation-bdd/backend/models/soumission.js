@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     const Soumission = sequelize.define('soumission', {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       chemin_fichier_pdf: { type: DataTypes.STRING(255), allowNull: false },
-      chemin_fichier_pdf_ia: { type: DataTypes.STRING(255), allowNull: false },
+      chemin_fichier_pdf_ia: { type: DataTypes.STRING(255) },
       date_soumission: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
       note_automatique: { type: DataTypes.FLOAT },
       note_final: { type: DataTypes.FLOAT },

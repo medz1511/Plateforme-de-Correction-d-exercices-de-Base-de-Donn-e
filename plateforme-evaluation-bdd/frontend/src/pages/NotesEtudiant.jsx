@@ -14,7 +14,9 @@ const getFileType = (filePath) => {
   return 'unknown';
 };
 
-const NoteEtudiant = ({ etudiantId = 2 }) => {
+const savedUser = JSON.parse(localStorage.getItem('user'));
+
+const NoteEtudiant = ({ etudiantId = savedUser.id }) => {
   const { darkMode } = useTheme();
   const [devoirs, setDevoirs] = useState([]);
   const [loading, setLoading] = useState(true);

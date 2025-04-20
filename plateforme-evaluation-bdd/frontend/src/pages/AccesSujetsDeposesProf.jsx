@@ -10,7 +10,9 @@ import {
   RefreshCw,
   Eye,
   Download,
-  AlertCircle
+  AlertCircle,
+  Calendar,
+  Info
 } from "lucide-react";
 import Header from "../components/common/Header";
 import StatCard from "../components/common/StatCard";
@@ -22,250 +24,368 @@ import {
   uploadSubmission,
   corrigerSoumission
 } from "../services/soumissionService";
-import API from "../services/api";
+// on importe à la fois l’instance axios ET la constante de base URL
+const API = import.meta.env.VITE_API_URL || '';
 
-const AccesSujetsDeposesEtudiant = () => {
+export default function AccesSujetsDeposesEtudiant() {
   const { darkMode } = useTheme();
   const [sujets, setSujets] = useState([]);
   const [soumissions, setSoumissions] = useState([]);
   const [uploadingId, setUploadingId] = useState(null);
   const [fileError, setFileError] = useState("");
   const [confirmWithdrawId, setConfirmWithdrawId] = useState(null);
-  const [viewingDetails, setViewingDetails] = useState(null);
+  const [viewingDetailsId, setViewingDetailsId] = useState(null);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
-  const [selectedPdf, setSelectedPdf] = useState(null);
+  const [selectedPdf, setSelectedPdf] = useState({ title: "", path: "" });
   const fileInputRefs = useRef({});
-  const savedUser = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user"));
 
+  // Chargement initial
   useEffect(() => {
-    fetchSujets()
-      .then(res => setSujets(res.data))
-      .catch(console.error);
+    fetchSujets().then(r => setSujets(r.data)).catch(console.error);
+    fetchSoumissionsByEtu(user.id).then(r => setSoumissions(r.data)).catch(console.error);
+  }, [user.id]);
 
-    fetchSoumissionsByEtu(savedUser.id)
-      .then(res => setSoumissions(res.data))
-      .catch(console.error);
-  }, []);
+  // Helpers & stats
+  const getSubmission   = sujetId => soumissions.find(s => s.sujet_id === sujetId);
+  const isSubmitted     = id => !!getSubmission(id);
+  const isCorrected     = id => getSubmission(id)?.etat === "CORRIGE";
+  const isDeadlinePassed= dl => new Date() > new Date(dl);
+  const isDeadlineClose = dl => {
+    const diff = new Date(dl) - Date.now();
+    return diff > 0 && diff <= 3*24*60*60*1000;
+  };
+  const total          = sujets.length;
+  const today          = new Date().toISOString().slice(0,10);
+  const newToday       = sujets.filter(s => s.date_creation.slice(0,10) === today).length;
+  const submittedCount = soumissions.filter(s => s.etat === "SOUMIS" || "CORRIGE").length;
 
-  // Statistiques
-  const totalSubjects     = sujets.length;
-  const todayStr          = new Date().toISOString().substr(0,10);
-  const newSubjectsToday  = sujets.filter(s => s.date_creation?.substr(0,10) === todayStr).length;
-  const submittedSubjects = soumissions.filter(s => s.etat === "SOUMIS").length;
-
-  // Helpers
-  const isSubmitted       = id => soumissions.some(s => s.sujet_id === id && s.etat === "SOUMIS");
-  const isDeadlinePassed  = date => new Date() > new Date(date);
-  const isDeadlineClose   = date => {
-    const diff = new Date(date) - new Date();
-    return diff > 0 && diff <= 3 * 24 * 60 * 60 * 1000;
+  // Ouvre l’input fichier caché
+  const openFileSelector = sujetId => {
+    const inp = fileInputRefs.current[sujetId];
+    if (inp) inp.click();
   };
 
-  // Upload / correction
-  const openFileSelector = id => fileInputRefs.current[id]?.click();
+  // Gère l’upload ou la correction
   const handleFileChange = async (sujetId, e) => {
-    const file = e.target.files[0];
-    // if (!file || file.type !== "application/pdf" || file.size > 10*1024*1024) {
-    //   setFileError("Fichier PDF requis (≤ 10 Mo).");
-    if (!file || file.size > 10*1024*1024) {
-        setFileError("Fichier requis (taille ≤ 10 Mo).");
+    const f = e.target.files[0];
+    if (!f || f.size > 10*1024*1024) {
+      setFileError("Fichier ≤ 10 Mo requis.");
       return;
     }
     setFileError("");
-    const existing = soumissions.find(s => s.sujet_id === sujetId);
+    const sub = getSubmission(sujetId);
     try {
-      if (existing) {
-        await corrigerSoumission(existing.id, file);
-      } else {
-        await uploadSubmission({ sujetId, userId: savedUser.id, file });
-      }
-      const fresh = await fetchSoumissionsByEtu(savedUser.id).then(r => r.data);
-      setSoumissions(fresh);
+      if (sub) await corrigerSoumission(sub.id, f);
+      else     await uploadSubmission({ userId:user.id, sujetId, file:f });
+      setSoumissions(await fetchSoumissionsByEtu(user.id).then(r=>r.data));
     } catch(err) {
       console.error(err);
-    } finally {
-      setUploadingId(null);
+      setFileError("Erreur lors de l’envoi.");
     }
+    setUploadingId(null);
   };
 
-  const handleSubmitClick   = id => setUploadingId(id);
-  const handleWithdrawClick = id => setConfirmWithdrawId(id);
-  const confirmWithdraw     = async () => {
-    const sub = soumissions.find(s => s.sujet_id === confirmWithdrawId);
+  // Supprime son rendu
+  const confirmWithdraw = async () => {
+    const sub = getSubmission(confirmWithdrawId);
     if (sub) {
       await deleteSoumission(sub.id);
-      const fresh = await fetchSoumissionsByEtu(savedUser.id).then(r => r.data);
-      setSoumissions(fresh);
+      setSoumissions(await fetchSoumissionsByEtu(user.id).then(r=>r.data));
     }
     setConfirmWithdrawId(null);
   };
 
-  // Détails
-  const viewSubjectDetails = id => {
-    const subj = sujets.find(s => s.id === id);
-    setViewingDetails(subj);
-  };
-
-  // PDF Viewer
-  const openPdfViewer = sujet => {
-    setSelectedPdf({
-      exerciseTitle: sujet.titre,
-      pdfUrl: sujet.chemin_fichier_pdf
-    });
+  // Ouvre la visionneuse PDF
+  const openPdfViewer = (title, path) => {
+    setSelectedPdf({ title, path });
     setShowPdfViewer(true);
   };
+  const closePdfViewer = () => setShowPdfViewer(false);
 
-  const downloadPdf = sujet => {
-    const url = `${API}${sujet.chemin_fichier_pdf}`;
+  // Téléchargement
+  const download = (path,name) => {
     const a = document.createElement("a");
-    a.href = url;
-    a.download = `${sujet.titre}.pdf`;
+    a.href = `${API}${path}`;       // <-- on utilise API
+    a.download = name;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
   };
-
+  console.log(sujets)
   return (
-    <div className={`flex-1 ${darkMode ? "bg-gray-900" : "bg-gray-50"} transition-colors`}>
+    <div className={`flex-1 ${darkMode?"bg-gray-900":"bg-gray-50"} transition-colors`}>
       <Header title="Accès aux Sujets Déposés" />
+
       <main className="max-w-7xl mx-auto py-6 px-4">
 
         {/* Statistiques */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8"
-          initial={{ opacity:0, y:20 }}
-          animate={{ opacity:1, y:0 }}
-          transition={{ duration:0.8 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+          initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:0.8}}
         >
-          <StatCard name="Total Sujets"         icon={FileText}    value={totalSubjects}    darkMode={darkMode}/>
-          <StatCard name="Nouveaux Aujourd'hui" icon={CheckCircle} value={newSubjectsToday} darkMode={darkMode}/>
-          <StatCard name="Sujets Soumis"       icon={CheckCircle} value={submittedSubjects}darkMode={darkMode}/>
+          <StatCard name="Total Sujets"         icon={FileText}    value={total}          darkMode={darkMode}/>
+          <StatCard name="Nouveaux Aujourd'hui" icon={CheckCircle} value={newToday}       darkMode={darkMode}/>
+          <StatCard name="Sujets Soumis"        icon={CheckCircle} value={submittedCount}darkMode={darkMode}/>
         </motion.div>
+        
+        {/* Cartes de sujets */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {sujets.map(s => {
+            const sub = getSubmission(s.id);
+            const passed = isDeadlinePassed(s.date_limite);
+            const fileName = sub?.chemin_fichier_pdf?.split("/").pop() ?? "";
+            return (
+              <motion.div
+                key={s.id}
+                className={`p-6 rounded-lg shadow-lg transition-colors ${darkMode?"bg-gray-800":"bg-white"}`}
+                whileHover={{scale:1.02}}
+              >
+                {/* En‑tête */}
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className={`text-lg font-semibold ${darkMode?"text-gray-100":"text-gray-900"}`}>
+                      {s.titre}
+                    </h3>
+                    <p className={`text-sm ${darkMode?"text-gray-400":"text-gray-600"}`}>
+                      Publié le {new Date(s.date_creation).toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                  <span className="text-sm text-gray-400 flex items-center gap-1">
+                    <Calendar size={14}/>
+                    {new Date(s.date_limite).toLocaleDateString("fr-FR")}
+                    {isDeadlineClose(s.date_limite)&&" (bientôt)"}
+                  </span>
+                </div>
 
-        {/* Tableau */}
-        <motion.div className="overflow-x-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <table className="min-w-full">
-            <thead className={`${darkMode ? "bg-gray-700 text-gray-400" : "bg-gray-100 text-gray-600"} uppercase text-xs`}>
-              <tr>
-                <th className="px-6 py-3 text-left">Sujet</th>
-                <th className="px-6 py-3 text-center">Deadline</th>
-                <th className="px-6 py-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sujets.map(sujet => {
-                const submitted = isSubmitted(sujet.id);
-                const passed    = isDeadlinePassed(sujet.date_limite);
-                return (
-                  <tr key={sujet.id} className={`border-b hover:bg-gray-50 ${darkMode && "hover:bg-gray-800"}`}>
-                    <td className="px-6 py-3">{sujet.titre}</td>
-                    <td className="px-6 py-3 text-center">
-                      <span className={isDeadlineClose(sujet.date_limite) ? "text-yellow-500" : ""}>
-                        {new Date(sujet.date_limite).toLocaleDateString("fr-FR")}
-                        {isDeadlineClose(sujet.date_limite) && " (bientôt)"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3 flex items-center justify-center space-x-2">
-                      <input
-                        type="file"
-                        // accept="application/pdf"
-                        ref={el => fileInputRefs.current[sujet.id] = el}
-                        style={{ display: 'none' }}
-                        onChange={e => handleFileChange(sujet.id, e)}
-                      />
+                {/* Description */}
+                <p className={`mb-2 ${darkMode?"text-gray-300":"text-gray-600"}`} style={{minHeight:48}}>
+                  {s.description?.slice(0,100)}…
+                </p>
 
-                      {/* Voir (violet) */}
-                      <button
-                        onClick={() => openPdfViewer(sujet)}
-                        title="Visualiser le PDF"
-                        className={`p-2 rounded transition-colors ${
-                          darkMode ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-500 hover:bg-violet-600"
-                        }`}
-                      >
-                        <Eye className="text-white" size={18}/>
+                {/* Nom du fichier rendu */}
+                {sub && (
+                  <p className={`mb-4 text-sm ${darkMode?"text-gray-300":"text-gray-600"}`}>
+                    <strong>Mon fichier :</strong> {fileName}
+                  </p>
+                )}
+
+                {/* Tags */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <span className={`px-2 py-1 text-xs rounded ${
+                    sub?"bg-green-100 text-green-800":"bg-red-100 text-red-800"
+                  }`}>{sub?"Soumis":"Non soumis"}</span>
+                  {sub && isCorrected(s.id) && (
+                    <span className="px-2 py-1 text-xs rounded bg-indigo-100 text-indigo-800">
+                      Corrigé
+                    </span>
+                  )}
+                  {passed && !sub && (
+                    <span className="px-2 py-1 text-xs rounded bg-red-100 text-red-800">
+                      Clôturé
+                    </span>
+                  )}
+                </div>
+
+                {/* Boutons d’action */}
+                <div className="flex flex-wrap gap-2">
+                  {/* input fichier caché */}
+                  <input
+                    type="file"
+                    ref={el=>fileInputRefs.current[s.id]=el}
+                    style={{display:"none"}}
+                    onChange={e=>handleFileChange(s.id,e)}
+                  />
+
+                  {/* Voir PDF du sujet */}
+                  <button
+                    onClick={()=>openPdfViewer(s.titre,s.chemin_fichier_pdf)}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded ${
+                      darkMode?"bg-violet-600 hover:bg-violet-700":"bg-violet-500 hover:bg-violet-600"
+                    } text-white`}
+                  >
+                    <Eye size={16}/>Voir PDF
+                  </button>
+
+                  {/* Télécharger le sujet
+                  <button
+                    onClick={()=>download(s.chemin_fichier_pdf,`${s.titre}.pdf`)}
+                    className={`flex-1 flex items-center justify-center gap-1 py-2 rounded ${
+                      darkMode?"bg-pink-600 hover:bg-pink-700":"bg-pink-500 hover:bg-pink-600"
+                    } text-white`}
+                  >
+                    <Download size={16}/>Télécharger
+                  </button> */}
+
+
+
+                  {/* Rendre / remplacer */}
+                  {!sub && !passed && (
+                    <button
+                      onClick={()=>setUploadingId(s.id)}
+                      className={`flex-1 flex items-center justify-center gap-1 py-2 rounded ${
+                        darkMode?"bg-green-600 hover:bg-green-700":"bg-green-500 hover:bg-green-600"
+                      } text-white`}
+                    >
+                      <Upload size={16}/>Rendre
+                    </button>
+                  )}
+                  {sub && !passed && !isCorrected(s.id) && (
+                    <>
+                      <button onClick={()=>setUploadingId(s.id)}>
+                        <RefreshCw size={18}/>
                       </button>
-
-                      {/* Télécharger (rose) */}
-                      <button
-                        onClick={() => downloadPdf(sujet)}
-                        title="Télécharger le sujet"
-                        className={`p-2 rounded transition-colors ${
-                          darkMode ? "bg-pink-600 hover:bg-pink-700" : "bg-pink-500 hover:bg-pink-600"
-                        }`}
-                      >
-                        <Download className="text-white" size={18}/>
+                      <button onClick={()=>setConfirmWithdrawId(s.id)}>
+                        <X size={18}/>
                       </button>
+                    </>
+                  )}
 
-                      {/* Rendre / remplacer / retirer */}
-                      {!submitted && !passed && (
-                        <button
-                          onClick={() => setUploadingId(sujet.id)}
-                          className={`flex items-center px-3 py-1 rounded text-white ${
-                            darkMode ? "bg-green-600 hover:bg-green-700" : "bg-green-500 hover:bg-green-600"
-                          }`}
-                        >
-                          <Upload className="mr-1" size={16}/> Rendre
-                        </button>
-                      )}
-                      {submitted && !passed && (
-                        <>
-                          <button onClick={() => setUploadingId(sujet.id)}>
-                            <RefreshCw size={18}/>
-                          </button>
-                          <button onClick={() => setConfirmWithdrawId(sujet.id)}>
-                            <X size={18}/>
-                          </button>
-                        </>
-                      )}
-                      {!submitted && passed && (
-                        <span className="text-red-600 flex items-center">
-                          <AlertCircle size={18}/> Clôturé
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </motion.div>
+                  {/* Voir plus */}
+                  <button
+                    onClick={()=>setViewingDetailsId(s.id)}
+                    className={`p-2 rounded ${
+                      darkMode?"bg-blue-600 hover:bg-blue-700":"bg-blue-500 hover:bg-blue-600"
+                    } text-white`}
+                  >
+                    <Info size={16}/>Voir plus
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
 
-        {/* Upload Modal */}
+        {/* Modal “Voir plus” */}
+        {viewingDetailsId && (() => {
+          const sujet   = sujets.find(x=>x.id===viewingDetailsId);
+          const sub     = getSubmission(viewingDetailsId);
+          const fileName= sub?.chemin_fichier_pdf?.split("/").pop() ?? "";
+          return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className={`w-full max-w-2xl p-6 rounded-lg shadow-lg transition-colors ${
+                darkMode?"bg-gray-800 text-gray-100":"bg-white text-gray-900"
+              }`}>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">{sujet.titre}</h2>
+                  <button onClick={()=>setViewingDetailsId(null)}><X size={24}/></button>
+                </div>
+                <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <dt className="text-sm text-gray-400 flex items-center gap-1">
+                      <Calendar size={14}/>Publié le
+                    </dt>
+                    <dd className="mt-1">
+                      {new Date(sujet.date_creation).toLocaleDateString("fr-FR")}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400 flex items-center gap-1">
+                      <Calendar size={14}/>Date limite
+                    </dt>
+                    <dd className="mt-1">
+                      {new Date(sujet.date_limite).toLocaleDateString("fr-FR")}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400">Mon rendu</dt>
+                    <dd className="mt-1">
+                      {sub
+                        ? fileName
+                        : <span className="text-red-500">Non soumis</span>}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400">Soumis le</dt>
+                    <dd className="mt-1">
+                      {sub 
+                        ? new Date(sub.date_soumission).toLocaleString()
+                        : "-"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-gray-400">Statut</dt>
+                    <dd className="mt-1">
+                      {sub && isCorrected(sujet.id)
+                        ? <span className="text-indigo-500">Corrigé</span>
+                        : <span className="text-yellow-500">En attente</span>}
+                    </dd>
+                  </div>
+                </dl>
+
+                <p className={`mb-6 ${darkMode?"text-gray-300":"text-gray-600"}`}>
+                  {sujet.description}
+                </p>
+
+                {sub && (
+  <button
+    onClick={() => openPdfViewer(
+      sujet.titre,            // ou un titre plus parlant
+      sub.chemin_fichier_pdf
+    )}
+    className={`mb-6 px-4 py-2 rounded ${
+      darkMode ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-500 hover:bg-violet-600"
+    } text-white`}
+  >
+    <Eye className="inline mr-2"/>Voir mon rendu
+  </button>
+                )}
+
+                <button
+                  onClick={()=>setViewingDetailsId(null)}
+                  className={`px-4 py-2 rounded ${
+                    darkMode
+                      ? "bg-gray-600 hover:bg-gray-700 text-white"
+                      : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+                  }`}
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Modal d’upload */}
         {uploadingId !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className={`p-6 rounded shadow-lg w-96 transition-colors ${
-              darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
+              darkMode?"bg-gray-800 text-gray-100":"bg-white text-gray-900"
             }`}>
               {fileError && <p className="mb-4 text-red-500">{fileError}</p>}
               <p className="mb-4">
-                Sélectionnez un PDF pour <strong>{sujets.find(s=>s.id===uploadingId)?.titre}</strong>
+                Sélectionnez un fichier pour <strong>
+                  {sujets.find(s=>s.id===uploadingId)?.titre}
+                </strong>
               </p>
               <div className="flex justify-center mb-4">
                 <button
-                  onClick={() => openFileSelector(uploadingId)}
+                  onClick={()=>openFileSelector(uploadingId)}
                   className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
                 >
-                  <FileText size={18} className="mr-1"/> Choisir le fichier
+                  <FileText size={18} className="mr-1"/>Choisir le fichier
                 </button>
               </div>
               <div className="flex justify-end">
-                <button onClick={() => setUploadingId(null)}>Annuler</button>
+                <button onClick={()=>setUploadingId(null)}>Annuler</button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Withdraw Modal */}
+        {/* Modal de retrait */}
         {confirmWithdrawId !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className={`p-6 rounded shadow-lg w-96 transition-colors ${
-              darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
+              darkMode?"bg-gray-800 text-gray-100":"bg-white text-gray-900"
             }`}>
               <p className="mb-4">
-                Retirer le dépôt pour <strong>{sujets.find(s=>s.id===confirmWithdrawId)?.titre}</strong> ?
+                Retirer le dépôt pour <strong>
+                  {sujets.find(s=>s.id===confirmWithdrawId)?.titre}
+                </strong>&nbsp;?
               </p>
               <div className="flex justify-end space-x-2">
-                <button onClick={() => setConfirmWithdrawId(null)}>Annuler</button>
+                <button onClick={()=>setConfirmWithdrawId(null)}>Annuler</button>
                 <button
                   onClick={confirmWithdraw}
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
@@ -277,28 +397,25 @@ const AccesSujetsDeposesEtudiant = () => {
           </div>
         )}
 
-        {/* PDF Viewer */}
-        {showPdfViewer && selectedPdf && (
+        {/* Visionneuse PDF */}
+        {showPdfViewer && selectedPdf.path && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-5xl h-4/5 transition-colors duration-300`}>
+            <div className={`w-full max-w-5xl h-4/5 p-6 rounded-lg transition-colors ${
+              darkMode?"bg-gray-800 text-gray-100":"bg-white text-gray-900"
+            }`}>
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">{selectedPdf.exerciseTitle}</h2>
-                <button onClick={() => setShowPdfViewer(false)}>
-                  <X size={24}/>
-                </button>
+                <h2 className="text-xl font-semibold">{selectedPdf.title}</h2>
+                <button onClick={closePdfViewer}><X size={24}/></button>
               </div>
               <iframe
-                src={`${API}${selectedPdf.pdfUrl}`}
+                src={`${API}${selectedPdf.path}`}
                 className="w-full h-full rounded"
-                title={selectedPdf.exerciseTitle}
+                title={selectedPdf.title}
               />
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
-};
-
-export default AccesSujetsDeposesEtudiant;
+}

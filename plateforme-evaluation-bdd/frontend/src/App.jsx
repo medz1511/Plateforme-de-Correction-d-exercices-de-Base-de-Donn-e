@@ -24,8 +24,8 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={currentUser.role === 'etudiant' ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
+  if (allowedRoles && !allowedRoles.includes(currentUser.role.toLowerCase())) {
+    return <Navigate to={currentUser.role.toLowerCase() === "etudiant" ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
   }
   return children;
 }
@@ -41,7 +41,23 @@ function AppRoutes() {
       {!isLoginPage && <Sidebar />}
       <div className="w-full overflow-y-auto">
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+        <Route
+            path="/"
+            element={
+              currentUser ? (
+                <Navigate
+                  to={
+                    currentUser.role.toLowerCase() === "etudiant"
+                      ? "/dashboard-etudiant"
+                      : "/react-dashboard"
+                  }
+                  replace
+                />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
           <Route path="/register" element={<Register />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/dahboard-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><Visualisation /></ProtectedRoute>} />

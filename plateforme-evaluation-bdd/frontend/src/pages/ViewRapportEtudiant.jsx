@@ -52,7 +52,7 @@ const ViewRapportEtudiant = () => {
           etudiant: `${r.utilisateur.prenom} ${r.utilisateur.nom}`,
           email: r.utilisateur.email,
           dateRemise: new Date(r.date_soumission).toLocaleDateString('fr-FR'),
-          statut: r.etat_upload === 'TERMINE' ? 'Corrigé' : 'En attente',
+          statut: r.etat === 'CORRIGE ' ? 'Corrigé' : 'En attente',
           note: r.note_automatique != null ? `${r.note_automatique}/20` : '-',
           commentaires: r.commentaire_ia ? 1 : 0
         }));

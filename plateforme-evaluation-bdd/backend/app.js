@@ -29,20 +29,33 @@ app.use(cookieParser());
 // app.use(passport.session());
 
 const { verifyToken } = require('./services/authService');
+
 app.use((req, res, next) => {
-  // On protège les routes /* sauf /auth/*
-  if (req.path.startsWith('/') && !req.path.startsWith('/auth')) {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token manquant' });
-    }
-    const token = authHeader.split(' ')[1];
-    const payload = verifyToken(token);
-    if (!payload) {
-      return res.status(401).json({ error: 'Token invalide' });
-    }
-    req.user = payload; // id, email, role
+  const path = req.path.toLowerCase();
+
+  // Ne pas protéger les routes /auth/* ni /upload* (ou /uploads/*)
+  if (
+    path.startsWith('/auth') ||
+    path.startsWith('/upload') ||   // couvre /upload et /uploads etc.
+    path.startsWith('/uploads')
+  ) {
+    return next();
   }
+
+  // Pour toutes les autres, on vérifie le token
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token manquant' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  const payload = verifyToken(token);
+  if (!payload) {
+    return res.status(401).json({ error: 'Token invalide' });
+  }
+
+  // on attache les infos utilisateur au req
+  req.user = payload;
   next();
 });
 

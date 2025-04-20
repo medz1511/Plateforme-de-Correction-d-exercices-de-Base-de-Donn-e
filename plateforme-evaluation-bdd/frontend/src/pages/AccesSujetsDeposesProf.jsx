@@ -204,7 +204,7 @@ export default function AccesSujetsDeposesEtudiant() {
                       darkMode?"bg-violet-600 hover:bg-violet-700":"bg-violet-500 hover:bg-violet-600"
                     } text-white`}
                   >
-                    <Eye size={16}/>Voir PDF
+                    <Eye size={16}/>Voir Sujet
                   </button>
 
                   {/* Télécharger le sujet

@@ -1,5 +1,3 @@
-// src/pages/ViewRapportEtudiant.jsx
-
 import React, { useState, useEffect } from 'react';
 import {
   Eye,
@@ -52,9 +50,10 @@ const ViewRapportEtudiant = () => {
           etudiant: `${r.utilisateur.prenom} ${r.utilisateur.nom}`,
           email: r.utilisateur.email,
           dateRemise: new Date(r.date_soumission).toLocaleDateString('fr-FR'),
-          statut: r.etat === 'CORRIGE ' ? 'Corrigé' : 'En attente',
+          statut: r.etat === 'CORRIGE' ? 'Corrigé' : 'En attente',
           note: r.note_automatique != null ? `${r.note_automatique}/20` : '-',
-          commentaires: r.commentaire_ia ? 1 : 0
+          commentaires: r.commentaire_ia ? 1 : 0,
+          chemin_fichier_pdf: r.chemin_fichier_pdf
         }));
         setRapports(data);
       })
@@ -68,13 +67,79 @@ const ViewRapportEtudiant = () => {
     )
     .filter(r => statusFilter === 'all' || r.statut === statusFilter);
 
-  const openSubjectPdf = sujet => {
+  const openSubjectPdf = (sujet) => {
     setSelectedPdf({
       exerciseTitle: sujet.titre,
       pdfUrl: sujet.chemin_fichier_pdf
     });
     setShowPdfViewer(true);
-    console.log(sujet.chemin_fichier_pdf);
+  };
+
+  // Fonction ajoutée pour visualiser un rapport
+  const handleReportView = (rapportId) => {
+    const rapport = rapports.find(r => r.id === rapportId);
+    if (!rapport || !rapport.chemin_fichier_pdf) {
+      alert("Le fichier PDF n'est pas disponible.");
+      return;
+    }
+    
+    setSelectedPdf({
+      exerciseTitle: `Rapport de ${rapport.etudiant}`,
+      pdfUrl: rapport.chemin_fichier_pdf
+    });
+    setShowPdfViewer(true);
+  };
+
+  // Fonction ajoutée pour télécharger un rapport
+  const handleReportDownload = (rapportId) => {
+    const rapport = rapports.find(r => r.id === rapportId);
+    if (!rapport || !rapport.chemin_fichier_pdf) {
+      alert("Le fichier PDF n'est pas disponible.");
+      return;
+    }
+    
+    const link = document.createElement('a');
+    link.href = `${API_BASE}${rapport.chemin_fichier_pdf}`;
+    link.download = `Rapport_${rapport.etudiant}_${new Date().toISOString().split('T')[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Fonction pour télécharger tous les rapports en ZIP
+  const handleDownloadAll = () => {
+    if (rapports.length === 0) {
+      alert("Aucun rapport disponible à télécharger.");
+      return;
+    }
+    
+    // Vous devrez créer une API backend pour gérer cette fonctionnalité
+    // Pour l'instant, on simule un appel API
+    fetch(`${API_BASE}/api/rapports/download-all/${selectedExerciseId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erreur lors du téléchargement');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Tous_les_rapports_${new Date().toISOString().split('T')[0]}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(error => {
+        console.error('Erreur lors du téléchargement:', error);
+        alert('Impossible de télécharger tous les rapports. Veuillez réessayer plus tard.');
+      });
   };
 
   const ExercisesList = () => (
@@ -113,7 +178,7 @@ const ViewRapportEtudiant = () => {
                     onClick={e => {
                       e.stopPropagation();
                       const link = document.createElement('a');
-                      link.href = ex.chemin_fichier_pdf;
+                      link.href = `${API_BASE}${ex.chemin_fichier_pdf}`;
                       link.download = `${ex.titre}.pdf`;
                       document.body.appendChild(link);
                       link.click();
@@ -149,7 +214,7 @@ const ViewRapportEtudiant = () => {
               </button>
               <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{exercice?.titre}</h2>
               <div className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                {exercice?.sujet} — Date limite: {new Date(exercice?.date_limite).toLocaleDateString('fr-FR')}
+                {exercice?.description} — Date limite: {exercice?.date_limite ? new Date(exercice.date_limite).toLocaleDateString('fr-FR') : 'N/A'}
               </div>
             </div>
             <div className="space-x-2">
@@ -159,7 +224,9 @@ const ViewRapportEtudiant = () => {
               <span className={`px-3 py-1 rounded-md text-sm ${darkMode ? 'bg-yellow-900 text-yellow-100' : 'bg-yellow-100 text-yellow-800'}`}>
                 {totalPending} en attente
               </span>
-              <button className={`px-3 py-1 rounded-md text-white ${darkMode ? 'bg-green-600 hover:bg-green-500' : 'bg-green-500 hover:bg-green-600'}`}>
+              <button 
+                onClick={handleDownloadAll}
+                className={`px-3 py-1 rounded-md text-white ${darkMode ? 'bg-green-600 hover:bg-green-500' : 'bg-green-500 hover:bg-green-600'}`}>
                 Télécharger tout
               </button>
             </div>
@@ -227,9 +294,23 @@ const ViewRapportEtudiant = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button onClick={() => handleReportView(r.id)} className="p-1.5 rounded-md"><Eye size={16} /></button>
-                          <button onClick={() => handleReportDownload(r.id)} className="p-1.5 rounded-md"><Download size={16} /></button>
-                          {r.statut === 'En attente' && <button className="p-1.5 rounded-md"><ThumbsUp size={16} /></button>}
+                          <button onClick={() => handleReportView(r.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
+                            <Eye size={16} />
+                          </button>
+                          <button onClick={() => handleReportDownload(r.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
+                            <Download size={16} />
+                          </button>
+                          {r.statut === 'En attente' && (
+                            <button 
+                              className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                              onClick={() => {
+                                // Implémenter la validation du rapport ici
+                                alert("Fonctionnalité à implémenter");
+                              }}
+                            >
+                              <ThumbsUp size={16} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

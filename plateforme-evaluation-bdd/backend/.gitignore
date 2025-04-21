@@ -15,7 +15,7 @@ coverage/
 tmp/
 
 # Uploads temporaires (ex. Multer)
-#uploads/
+uploads/
 uploads/soumissions/** 
 
 # OS files

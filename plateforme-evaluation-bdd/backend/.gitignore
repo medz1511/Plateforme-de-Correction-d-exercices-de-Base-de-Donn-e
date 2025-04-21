@@ -8,10 +8,6 @@ pnpm-debug.log*
 logs/
 *.log
 
-# Environment files
-.env
-.env.*.local
-
 # Build / dépendances générées
 dist/
 build/
@@ -19,8 +15,8 @@ coverage/
 tmp/
 
 # Uploads temporaires (ex. Multer)
-uploads/
-uploads/**
+#uploads/
+uploads/soumissions/** 
 
 # OS files
 .DS_Store

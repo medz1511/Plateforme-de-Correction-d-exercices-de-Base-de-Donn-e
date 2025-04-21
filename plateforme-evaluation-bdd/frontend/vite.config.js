@@ -6,6 +6,16 @@ import path from 'path'; // Ajout de l'import path
 export default defineConfig({
   base: '/',
   plugins: [react()],
+  server: {
+    proxy: {
+      // redirige /api vers http://localhost:3001
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      },
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'), // Alias pour les imports absolus

@@ -19,8 +19,9 @@ coverage/
 tmp/
 
 # Uploads temporaires (ex. Multer)
-#uploads/
-uploads/soumissions/**
+uploads/
+uploads/soumissions/
+config/config.json
 
 # OS files
 .DS_Store

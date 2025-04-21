@@ -66,11 +66,11 @@ import {
                       <div className={`mb-6 p-4 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg`}>
                           <div className="flex items-center space-x-3">
                               <div className={`w-10 h-10 rounded-full ${darkMode ? 'bg-indigo-600' : 'bg-indigo-500'} flex items-center justify-center text-white font-bold`}>
-                                  {currentUser?.name?.[0].toUpperCase() || 'U'}
+                                  {currentUser?.prenom?.[0].toUpperCase()}{currentUser?.nom?.[0].toUpperCase()}
                               </div>
                               <div>
-                                  <p className={darkMode ? 'text-white' : 'text-gray-900'}>{currentUser?.name || 'Utilisateur'}</p>
-                                  <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>{currentUser?.role || 'Non défini'}</p>
+                                  <p className={darkMode ? 'text-white' : 'text-gray-900'}>{currentUser?.prenom || 'Prenom'} {currentUser?.nom || 'nom'}</p>
+                                  <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>{currentUser?.role.toUpperCase() || 'Non défini'}</p>
                               </div>
                           </div>
                       </div>

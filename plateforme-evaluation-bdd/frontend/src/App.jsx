@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 import Register from "./pages/Register";
+import OAuthCallback from "./pages/OAuthCallback";
 import ConnectedAccounts from "./components/settings/ConnectedAccounts";
 import CorrectionModelsPage from "./pages/CorrectionModelsPage";
 import AccesSujetsDeposesProf from "./pages/AccesSujetsDeposesProf";
@@ -14,7 +15,7 @@ import ConsultationNotes from "./pages/ConsultationNotes";
 import ViewRapportEtudiant from "./pages/ViewRapportEtudiant";
 import AjoutExercice from "./pages/AjoutExercice";
 import Visualisation from "./pages/Dashboard-Etudiant";
-
+// o
 function ProtectedRoute({ children, allowedRoles }) {
   const { currentUser } = useAuth();
   const location = useLocation();
@@ -23,10 +24,9 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={currentUser.role === 'etudiant' ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
+  if (allowedRoles && !allowedRoles.includes(currentUser.role.toLowerCase())) {
+    return <Navigate to={currentUser.role.toLowerCase() === "etudiant" ? "/dahboard-etudiant" : "/react-dashboard"} replace />;
   }
-
   return children;
 }
 
@@ -41,15 +41,31 @@ function AppRoutes() {
       {!isLoginPage && <Sidebar />}
       <div className="w-full overflow-y-auto">
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+        <Route
+            path="/"
+            element={
+              currentUser ? (
+                <Navigate
+                  to={
+                    currentUser.role.toLowerCase() === "etudiant"
+                      ? "/dashboard-etudiant"
+                      : "/react-dashboard"
+                  }
+                  replace
+                />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
           <Route path="/register" element={<Register />} />
-          
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="/dahboard-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><Visualisation /></ProtectedRoute>} />
           <Route path="/viewRapport" element={<ProtectedRoute allowedRoles={['professeur']}><ViewRapportEtudiant /></ProtectedRoute>} />
-          <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
           <Route path="/react-dashboard" element={<ProtectedRoute allowedRoles={['professeur']}><Dashboard /></ProtectedRoute>} />
           <Route path="/ajoutExercice" element={<ProtectedRoute allowedRoles={['professeur']}><AjoutExercice /></ProtectedRoute>} />
           <Route path="/sujets-deposes" element={<ProtectedRoute allowedRoles={['etudiant']}><AccesSujetsDeposesProf /></ProtectedRoute>} />
+          <Route path="/notes-etudiant" element={<ProtectedRoute allowedRoles={['etudiant']}><NotesEtudiant /></ProtectedRoute>} />
           <Route path="/consultation-notes" element={<ProtectedRoute allowedRoles={['professeur']}><ConsultationNotes /></ProtectedRoute>} />
           <Route path="/correction-models" element={<ProtectedRoute allowedRoles={['professeur']}><CorrectionModelsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute allowedRoles={['professeur', 'etudiant']}><SettingsPage /></ProtectedRoute>} />

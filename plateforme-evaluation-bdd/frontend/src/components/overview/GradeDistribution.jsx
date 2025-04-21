@@ -1,46 +1,34 @@
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from "recharts";
 import { useTheme } from "@/context/ThemeContext";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Award, Loader2, ChevronUp, ChevronDown } from "lucide-react";
-
+import { fetchGradeDistribution } from "../../services/statisticsService";
 const GradeDistribution = ({ loading = false }) => {
     const { darkMode } = useTheme();
     const [activeIndex, setActiveIndex] = useState(null);
     const [showInfo, setShowInfo] = useState(false);
-
-    // Données avec couleurs adaptées au thème
-    const data = [
-        { 
-            name: "Excellent (16-20)", 
-            value: 32, 
-            color: darkMode ? "#34d399" : "#10b981",
-            description: "Performances exceptionnelles"
-        },
-        { 
-            name: "Bon (12-16)", 
-            value: 45, 
-            color: darkMode ? "#818cf8" : "#6366f1",
-            description: "Bonnes compétences maîtrisées"
-        },
-        { 
-            name: "Moyen (8-12)", 
-            value: 18, 
-            color: darkMode ? "#fbbf24" : "#f59e0b",
-            description: "Compétences partiellement acquises"
-        },
-        { 
-            name: "Faible (0-8)", 
-            value: 5, 
-            color: darkMode ? "#f87171" : "#ef4444",
-            description: "Besoins de remédiation"
-        },
-    ];
+    // on remplace le mock par un state vide
+    const [data, setData] = useState([]);
+    const [isLoading, setIsLoading] = useState(loading);
 
     // Styles dynamiques
     const containerClasses = `rounded-xl shadow-lg overflow-hidden transition-colors duration-300 ${
         darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
     } border`;
+
+    useEffect(() => {
+        setIsLoading(true);
+        fetchGradeDistribution()
+          .then(res => {
+            // Recalcule aussi percent pour Recharts
+            const total = res.data.reduce((sum, e) => sum + e.count, 0);
+            setData(res.data.map(e => ({ ...e, percent: e.count / total })));
+          })
+          .catch(err => console.error("Erreur fetch grades :", err))
+          .finally(() => setIsLoading(false));
+      }, []);
+      
 
     // Active shape pour le secteur survolé
     const renderActiveShape = (props) => {
@@ -183,7 +171,7 @@ const GradeDistribution = ({ loading = false }) => {
             )}
 
             <div className="p-6 h-80">
-                {loading ? (
+            {isLoading ? (
                     <motion.div 
                         className="h-full flex flex-col items-center justify-center"
                         initial={{ opacity: 0 }}

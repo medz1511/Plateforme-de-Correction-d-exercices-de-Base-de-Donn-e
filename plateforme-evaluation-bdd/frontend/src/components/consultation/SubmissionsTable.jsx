@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Eye, Edit2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useTheme } from "@/context/ThemeContext";
+import ReactDOM from "react-dom";
 
 const Modal = ({ isOpen, onClose, children, darkMode }) => {
   if (!isOpen) return null;
@@ -24,16 +25,21 @@ const Modal = ({ isOpen, onClose, children, darkMode }) => {
 const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
   const { darkMode } = useTheme();
   const [selectedSubmission, setSelectedSubmission] = useState(null);
-  const [adjustedGrade, setAdjustedGrade] = useState(0);
+  const [adjustedGrade, setAdjustedGrade] = useState("");
   const [feedback, setFeedback] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleReviewClick = (submission) => {
     setSelectedSubmission(submission);
-    setAdjustedGrade(submission.professorScore || submission.aiScore);
-    setFeedback(submission.feedback || "");
-    setIsEditing(submission.status !== "reviewed");
+    // si note_final est null, on reprend note_automatique, sinon 0
+    setAdjustedGrade(
+      submission.note_final != null
+        ? submission.note_final
+        : (submission.note_automatique != null ? submission.note_automatique : "")
+    );
+    setFeedback(submission.commentaire_prof ?? "");
+    setIsEditing(submission.note_final == null);
     setIsModalOpen(true);
   };
 
@@ -68,8 +74,8 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
   const textClasses = `text-sm ${
     darkMode ? 'text-gray-300' : 'text-gray-600'
   }`;
-  const statusClasses = (status) => `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-    status === "reviewed"
+  const StatusClasses = (note_final) => `px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+    note_final === "reviewed"
       ? darkMode ? "bg-green-800 text-green-100" : "bg-green-100 text-green-800"
       : darkMode ? "bg-yellow-800 text-yellow-100" : "bg-yellow-100 text-yellow-800"
   }`;
@@ -114,36 +120,36 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                 <tr key={submission.id} className={tableRowClasses}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={studentNameClasses}>
-                      {submission.studentName}
+                      {`${submission.utilisateur.prenom} ${submission.utilisateur.nom}`}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={textClasses}>
-                      {submission.exerciseName}
+                      {submission.sujet.titre}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className={textClasses}>
-                      {new Date(submission.submittedAt).toLocaleString()}
+                      {new Date(submission.updatedAt).toLocaleString()}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={textClasses}>
-                      {submission.aiScore}/20
+                      {submission.note_automatique}/20
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {submission.professorScore ? (
+                    {submission.note_final ? (
                       <span className="text-green-400">
-                        {submission.professorScore}/20
+                        {submission.note_final}/20
                       </span>
                     ) : (
                       <span className={textClasses}>En attente</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={statusClasses(submission.status)}>
-                      {submission.status === "reviewed" ? "Corrigé" : "En attente"}
+                    <span className={StatusClasses(submission.note_final)}>
+                      {submission.etat}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -152,9 +158,9 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                       className={`${
                         darkMode ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-500'
                       } mr-4`}
-                      title={submission.status === "reviewed" ? "Voir/Modifier" : "Corriger"}
+                      title={submission.note_final !=null ? "Voir/Modifier" : "Corriger"}
                     >
-                      {submission.status === "reviewed" ? <Eye size={18} /> : <Edit2 size={18} />}
+                      {submission.note_final !=null ? <Eye size={18} /> : <Edit2 size={18} />}
                     </button>
                   </td>
                 </tr>
@@ -174,20 +180,20 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
             <h3 className={`text-xl font-bold mb-4 ${
               darkMode ? 'text-white' : 'text-gray-800'
             }`}>
-              {!isEditing && selectedSubmission.status === "reviewed"
+              {!isEditing && selectedSubmission.note_final !=null
                 ? "Détails de la soumission"
                 : "Correction"}
             </h3>
 
             <div className="mb-4">
               <p className={`mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                <span className="font-medium">Élève:</span> {selectedSubmission.studentName}
+                <span className="font-medium">Élève:</span> {`${selectedSubmission.utilisateur.prenom}${selectedSubmission.utilisateur.nom}`}
               </p>
               <p className={`mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                <span className="font-medium">Exercice:</span> {selectedSubmission.exerciseName}
+                <span className="font-medium">Exercice:</span> {selectedSubmission.sujet.titre}
               </p>
               <p className={`mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                <span className="font-medium">Soumis le:</span> {new Date(selectedSubmission.submittedAt).toLocaleString()}
+                <span className="font-medium">Soumis le:</span> {new Date(selectedSubmission.updatedAt).toLocaleString()}
               </p>
             </div>
 
@@ -197,7 +203,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                   Note IA:
                 </p>
                 <p className="text-yellow-400 font-bold">
-                  {selectedSubmission.aiScore}/20
+                  {selectedSubmission.note_automatique}/20
                 </p>
               </div>
 
@@ -207,7 +213,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                 <p className={`text-sm italic ${
                   darkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
-                  Analyse automatique...
+                  {selectedSubmission.commentaire_ia !=null ? selectedSubmission.commentaire_ia : "Commentaire IA pas encore disponible"}
                 </p>
               </div>
 
@@ -218,14 +224,19 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                   Note ajustée:
                 </label>
                 <input
-                  type="number"
-                  min="0"
-                  max="20"
-                  step="0.5"
-                  value={adjustedGrade}
-                  onChange={(e) => setAdjustedGrade(parseFloat(e.target.value))}
-                  className={inputClasses}
-                  disabled={!isEditing}
+                 type="number"
+                 min="0"
+                 max="20"
+                 step="0.5"
+                 // on affiche soit la valeur, soit chaîne vide
+                 value={adjustedGrade === "" ? "" : adjustedGrade}
+                 onChange={(e) => {
+                   const v = e.target.value;
+                   // si l'utilisateur vide le champ, on remet "", sinon le parse en nombre
+                   setAdjustedGrade(v === "" ? "" : parseFloat(v));
+                 }}
+                 className={inputClasses}
+                 disabled={!isEditing}
                 />
               </div>
 
@@ -236,7 +247,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                   Commentaires:
                 </label>
                 <textarea
-                  value={feedback}
+                  value={feedback ?? ''}
                   onChange={(e) => setFeedback(e.target.value)}
                   className={`${inputClasses} h-32`}
                   placeholder="Commentaires pour l'élève..."
@@ -255,7 +266,7 @@ const SubmissionsTable = ({ submissions, loading, onGradeAdjust }) => {
                 Annuler
               </button>
               
-              {selectedSubmission.status === "reviewed" && !isEditing ? (
+              {selectedSubmission.note_final !=null && !isEditing ? (
                 <button
                   onClick={toggleEditMode}
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"

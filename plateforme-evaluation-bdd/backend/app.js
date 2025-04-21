@@ -31,13 +31,17 @@ app.use(cookieParser());
 const { verifyToken } = require('./services/authService');
 
 app.use((req, res, next) => {
-  const path = req.path.toLowerCase();
+  const p = req.path.toLowerCase();
 
-  // Ne pas protéger les routes /auth/* ni /upload* (ou /uploads/*)
+  // EXCLUSIONS :  
+  //   · toutes les routes d’authent (login, register, logout)  
+  //   · l’upload/accès aux fichiers statiques  
+  //   · nos endpoints IA  
   if (
-    path.startsWith('/auth') ||
-    path.startsWith('/upload') ||   // couvre /upload et /uploads etc.
-    path.startsWith('/uploads')
+    p.startsWith('/auth')   ||  // /auth/*
+    p.startsWith('/upload') ||  // /upload* + /uploads/*
+    p.startsWith('/uploads')||
+    p.startsWith('/ia')     // <-- on exclut désormais /api/ia/*
   ) {
     return next();
   }
@@ -58,6 +62,12 @@ app.use((req, res, next) => {
   req.user = payload;
   next();
 });
+
+
+
+
+const iaRoutes = require('./routes/iaRoutes');
+app.use('/ia', iaRoutes);
 
 
 // Auth (local)

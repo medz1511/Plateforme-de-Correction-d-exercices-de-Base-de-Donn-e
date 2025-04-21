@@ -16,7 +16,10 @@ tmp/
 
 # Uploads temporaires (ex. Multer)
 uploads/
-uploads/soumissions/** 
+!uploads/.gitkeep  # Si tu veux garder le dossier vide
+# ou explicitement ignorer les fichiers
+uploads/**/*.pdf
+uploads/soumissions/**
 
 # OS files
 .DS_Store
@@ -44,3 +47,6 @@ __tests__/
 
 # Sequelize metadata
 .sequelize-meta
+
+# Configuration sensible
+config/config.json

@@ -73,8 +73,8 @@ app.use('/ia', iaRoutes);
 // Auth (local)
 app.use('/auth', require('./routes/authRoutes'));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/files', require('./routes/uploadRoutes'));
 // // Auth routes Google
 // app.get('/auth/google',
 //   passport.authenticate('google', { scope: ['profile','email'] })

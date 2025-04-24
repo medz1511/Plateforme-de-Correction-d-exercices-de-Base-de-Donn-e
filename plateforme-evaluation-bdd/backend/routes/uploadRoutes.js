@@ -5,7 +5,8 @@ const fileStorage = require('../services/fileStorageServices');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/upload', upload.single('file'), async (req, res) => {
+// POST /upload/
+router.post('/', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Aucun fichier fourni' });
@@ -15,19 +16,15 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     const fileName = `uploads/${Date.now()}-${originalname}`;
     
     await fileStorage.uploadFile(buffer, fileName, mimetype);
-    res.json({ success: true, filePath: fileName });
+    
+    res.json({ 
+      success: true, 
+      filePath: fileName,
+      url: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Erreur upload:', err);
     res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/:fileKey', async (req, res) => {
-  try {
-    const url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${req.params.fileKey}`;
-    res.redirect(url);
-  } catch (err) {
-    res.status(404).json({ error: 'Fichier non trouvé' });
   }
 });
 

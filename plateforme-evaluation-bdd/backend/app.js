@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 const db = require('./models');
 const app = express();
 const path = require('path');
-
+const uploadRoutes = require('./routes/uploadRoutes');
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
@@ -74,7 +74,11 @@ app.use('/ia', iaRoutes);
 app.use('/auth', require('./routes/authRoutes'));
 
 //app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use('/files', require('./routes/uploadRoutes'));
+//app.use('/files', require('./routes/uploadRoutes'));
+
+app.use('/upload', require('./routes/uploadRoutes'));
+
+
 // // Auth routes Google
 // app.get('/auth/google',
 //   passport.authenticate('google', { scope: ['profile','email'] })

@@ -15,7 +15,7 @@ async function testUpload() {
 
   try {
     // 3. Envoyer la requête
-    const response = await axios.post(`${serverUrl}/upload`, form, {
+    const response = await axios.post(`${serverUrl}/files`, form, {
       headers: {
         ...form.getHeaders(),
         Authorization: 'Bearer VOTRE_JWT' // Si nécessaire

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fileStorage = require('../services/fileStorageService');
+const fileStorage = require('../services/fileStorageServices');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 

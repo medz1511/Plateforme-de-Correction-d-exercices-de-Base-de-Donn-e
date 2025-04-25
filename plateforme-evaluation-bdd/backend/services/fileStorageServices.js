@@ -15,7 +15,7 @@ module.exports = {
       Body: fileBuffer,
       Key: fileName,
       ContentType: mimetype,
-      ACL: 'bucket-owner-full-control'
+      ACL: 'public-read' // Pour un accès public
     };
 
     await s3.send(new PutObjectCommand(uploadParams));

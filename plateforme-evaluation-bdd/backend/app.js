@@ -61,7 +61,6 @@ const uploadRoutes = require('./routes/uploadRoutes');
 // Configuration des routes
 app.use('/ia', iaRoutes);
 app.use('/auth', authRoutes);
-app.use('/upload', uploadRoutes);
 
 // Route d'upload - version simplifiée pour test
 app.post('/upload', upload.single('file'), async (req, res) => {

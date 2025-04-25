@@ -2,37 +2,34 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
-const testFile = 'test.txt';
-const serverUrl = 'http://localhost:3001';
-
 async function testUpload() {
-  // 1. Créer un fichier de test
-  fs.writeFileSync(testFile, 'Contenu de test');
-
-  // 2. Préparer le form-data
-  const form = new FormData();
-  form.append('file', fs.createReadStream(testFile));
+  const testFilePath = 'test.txt';
 
   try {
-    // 3. Envoyer la requête
-    const response = await axios.post(`${serverUrl}/files`, form, {
+    fs.writeFileSync(testFilePath, 'Contenu de test avancé');
+
+    const form = new FormData();
+    form.append('file', fs.createReadStream(testFilePath));
+
+    const response = await axios.post('http://localhost:3001/upload', form, {
       headers: {
         ...form.getHeaders(),
-        Authorization: 'Bearer VOTRE_JWT' // Si nécessaire
-      }
+        Authorization: `Bearer ${process.env.TEST_TOKEN || ''}`, // Optionnel
+      },
     });
 
     console.log('✅ Upload réussi:', response.data);
 
-    // 4. Tester le téléchargement
-    const fileKey = response.data.filePath;
-    const download = await axios.get(`${serverUrl}/files/${fileKey}`);
-    console.log('✅ Téléchargement réussi. URL:', download.request.res.responseUrl);
+    const downloadResponse = await axios.get(response.data.url);
+    console.log('✅ Téléchargement réussi:', downloadResponse.status);
   } catch (error) {
-    console.error('❌ Erreur:', error.response?.data || error.message);
+    console.error('❌ Erreur:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
   } finally {
-    // Nettoyage
-    fs.unlinkSync(testFile);
+    fs.unlinkSync(testFilePath);
   }
 }
 

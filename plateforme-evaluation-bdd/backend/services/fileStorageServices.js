@@ -4,21 +4,21 @@ const s3 = new S3Client({
   region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  }
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-module.exports = {
-  uploadFile: async (fileBuffer, fileName, mimetype) => {
-    const uploadParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Body: fileBuffer,
-      Key: fileName,
-      ContentType: mimetype,
-      ACL: 'public-read' // Pour un accès public
-    };
+const uploadFile = async (fileBuffer, fileName, mimetype) => {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileName,
+    Body: fileBuffer,
+    ContentType: mimetype,
+    ACL: 'bucket-owner-full-control',
+  };
 
-    await s3.send(new PutObjectCommand(uploadParams));
-    return fileName;
-  }
+  await s3.send(new PutObjectCommand(params));
+  return fileName;
 };
+
+module.exports = { uploadFile };

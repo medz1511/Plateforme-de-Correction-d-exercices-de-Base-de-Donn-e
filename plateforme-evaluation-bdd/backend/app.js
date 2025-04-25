@@ -4,40 +4,49 @@ const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const multer = require('multer'); // Ajout de multer
+// const passport = require('./config/passport');
 const db = require('./models');
 const app = express();
 const path = require('path');
-
-// Configuration CORS
+const uploadRoutes = require('./routes/uploadRoutes');
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
-
-// Middlewares de base
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Configuration de multer pour les uploads
-const upload = multer({ storage: multer.memoryStorage() });
+// // Sessions
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: false
+// }));
 
-// Middleware d'authentification
+// // Passport init
+// app.use(passport.initialize());
+// app.use(passport.session());
+
 const { verifyToken } = require('./services/authService');
+
 app.use((req, res, next) => {
   const p = req.path.toLowerCase();
 
-  // Routes exemptées d'authentification
+  // EXCLUSIONS :  
+  //   · toutes les routes d’authent (login, register, logout)  
+  //   · l’upload/accès aux fichiers statiques  
+  //   · nos endpoints IA  
   if (
-    p.startsWith('/auth') ||
-    p.startsWith('/upload') ||
-    p.startsWith('/ia')
+    p.startsWith('/auth')   ||  // /auth/*
+    p.startsWith('/upload') ||  // /upload* + /uploads/*
+    p.startsWith('/uploads')||
+    p.startsWith('/ia')     // <-- on exclut désormais /api/ia/*
   ) {
     return next();
   }
 
-  // Vérification du token pour les autres routes
+  // Pour toutes les autres, on vérifie le token
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token manquant' });
@@ -49,58 +58,80 @@ app.use((req, res, next) => {
     return res.status(401).json({ error: 'Token invalide' });
   }
 
+  // on attache les infos utilisateur au req
   req.user = payload;
   next();
 });
 
-// Import des routes
+
+
+
 const iaRoutes = require('./routes/iaRoutes');
-const authRoutes = require('./routes/authRoutes');
-const uploadRoutes = require('./routes/uploadRoutes');
-
-// Configuration des routes
 app.use('/ia', iaRoutes);
-app.use('/auth', authRoutes);
 
-// Route d'upload - version simplifiée pour test
-app.post('/upload', upload.single('file'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Aucun fichier fourni' });
-    }
 
-    // Simuler le stockage S3 pour test
-    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/uploads/${Date.now()}-${req.file.originalname}`;
-    
-    res.json({ 
-      success: true, 
-      filePath: req.file.originalname,
-      url: fileUrl
-    });
-  } catch (err) {
-    console.error('Erreur upload:', err);
-    res.status(500).json({ error: err.message });
-  }
+// Auth (local)
+app.use('/auth', require('./routes/authRoutes'));
+
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//app.use('/files', require('./routes/uploadRoutes'));
+
+app.use('/upload', require('./routes/uploadRoutes'));
+
+
+// // Auth routes Google
+// app.get('/auth/google',
+//   passport.authenticate('google', { scope: ['profile','email'] })
+// );
+// app.get('/auth/google/callback',
+//   passport.authenticate('google', { failureRedirect: '/login' }),
+//   (req, res) => { res.redirect('/'); }
+// );
+
+// // Auth routes GitHub
+// app.get('/auth/github',
+//   passport.authenticate('github', { scope: ['user:email'] })
+// );
+// app.get('/auth/github/callback',
+//   passport.authenticate('github', { failureRedirect: '/login' }),
+//   (req, res) => { res.redirect('/'); }
+// );
+
+// // Auth routes Microsoft
+// app.get('/auth/microsoft',
+//   passport.authenticate('azuread-openidconnect')
+// );
+// app.post('/auth/microsoft/callback',
+//   passport.authenticate('azuread-openidconnect', { failureRedirect: '/login' }),
+//   (req, res) => { res.redirect('/'); }
+// );
+
+// Route de logout
+app.get('/auth/logout', (req, res) => {
+  req.logout(err => {
+    if (err) return next(err);
+    res.redirect('/login');
+  });
 });
 
-// Routes existantes
+
+// Tes routes existantes
 app.use('/utilisateurs', require('./routes/utilisateurRoutes'));
 app.use('/sujets', require('./routes/sujetRoutes'));
 app.use('/soumissions', require('./routes/soumissionRoutes'));
 app.use('/notifications', require('./routes/notificationRoutes'));
 app.use('/logs', require('./routes/logActiviteRoutes'));
 app.use('/parametre_ia', require('./routes/parametreIARoutes'));
-app.use('/stats', require('./routes/statisticsRoutes'));
+const statisticsRoutes = require('./routes/statisticsRoutes');
+app.use('/stats', statisticsRoutes);
 app.use('/rapport', require('./routes/rapportRoutes'));
 
-// Démarrage du serveur
 const PORT = process.env.PORT || 3001;
-db.sequelize.sync({ alter: false })
+db.sequelize.sync({ alter: false })  // ou { force: true } en dev si besoin
   .then(() => {
     console.log('📦 Base de données connectée et synchronisée');
     app.listen(PORT, () => {
       console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-      console.log('Route upload test: POST http://localhost:3001/upload');
     });
   })
   .catch(err => {

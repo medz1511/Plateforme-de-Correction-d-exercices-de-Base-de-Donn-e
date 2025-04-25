@@ -2,44 +2,38 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
-const TEST_USER = {
-  email: 'test@example.com',
-  password: 'testpassword'
-};
+const testFile = 'test.txt';
+const serverUrl = 'http://localhost:3001';
 
-async function test() {
+async function testUpload() {
+  // 1. Créer un fichier de test
+  fs.writeFileSync(testFile, 'Contenu de test');
+
+  // 2. Préparer le form-data
+  const form = new FormData();
+  form.append('file', fs.createReadStream(testFile));
+
   try {
-    // 1. Login
-    const { token } = (await axios.post('http://localhost:3001/auth/login', {
-      email: TEST_USER.email,
-      password: TEST_USER.password
-    })).data;
-
-    // 2. Create test file
-    fs.writeFileSync('test.txt', 'Test content');
-
-    // 3. Prepare upload
-    const form = new FormData();
-    form.append('file', fs.createReadStream('test.txt'));
-
-    // 4. Execute upload
-    const response = await axios.post('http://localhost:3001/upload', form, {
+    // 3. Envoyer la requête
+    const response = await axios.post(`${serverUrl}/files`, form, {
       headers: {
         ...form.getHeaders(),
-        Authorization: `Bearer ${token}`
+        Authorization: 'Bearer VOTRE_JWT' // Si nécessaire
       }
     });
 
-    console.log('✅ Upload successful!', response.data);
+    console.log('✅ Upload réussi:', response.data);
+
+    // 4. Tester le téléchargement
+    const fileKey = response.data.filePath;
+    const download = await axios.get(`${serverUrl}/files/${fileKey}`);
+    console.log('✅ Téléchargement réussi. URL:', download.request.res.responseUrl);
   } catch (error) {
-    console.error('❌ Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      message: error.message
-    });
+    console.error('❌ Erreur:', error.response?.data || error.message);
   } finally {
-    if (fs.existsSync('test.txt')) fs.unlinkSync('test.txt');
+    // Nettoyage
+    fs.unlinkSync(testFile);
   }
 }
 
-test();
+testUpload();

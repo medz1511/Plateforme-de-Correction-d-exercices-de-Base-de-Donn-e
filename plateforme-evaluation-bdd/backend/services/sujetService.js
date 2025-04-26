@@ -19,7 +19,7 @@ module.exports = {
    * @param {number} id
    */
   getById: id => db.sujet.findByPk(id, {
-    include: [{ model: db.utilisateur, as: 'professeur', attributes: ['id','nom','prenom'] }]
+    include: [{ model: db.utilisateur, as: 'utilisateur', attributes: ['id','nom','prenom'] }]
   }),
 
 

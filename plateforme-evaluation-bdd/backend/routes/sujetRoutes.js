@@ -6,8 +6,33 @@ const rapportService = require('../services/rapportService');
 const soumissionService = require('../services/soumissionService');
 const fileStorage = require('../services/fileStorageServices'); // AWS S3
 
+
+
 // Multer pour upload en mémoire
 const upload = multer({ storage: multer.memoryStorage() });
+
+// GET /api/sujets/:id/signed-url -> Génère la signed URL du fichier sujet donné par le professeur
+router.get('/:id/signed-url', async (req, res) => {
+  try {
+    const sujet = await svc.getById(req.params.id);
+    if (!sujet || !sujet.chemin_fichier_pdf) {
+      return res.status(404).json({ error: "Sujet introuvable ou fichier manquant." });
+    }
+
+    // Nettoyer le chemin (enlève /uploads/)
+    const cleanPath = sujet.chemin_fichier_pdf.replace(/^\/?uploads\//, '');
+
+    console.log('📝 Chemin nettoyé:', cleanPath); // <-- Vérifie le chemin envoyé à S3
+
+    const signedUrl = await fileStorage.generateSignedUrl(cleanPath);
+    res.json({ url: signedUrl });
+  } catch (err) {
+    console.error('❌ Erreur GET /sujets/:id/signed-url:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 // GET /api/sujets
 router.get('/', async (req, res) => {
@@ -18,6 +43,9 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
 
 // GET /api/sujets/:id
 router.get('/:id', async (req, res) => {
@@ -107,5 +135,7 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
+
 
 module.exports = router;

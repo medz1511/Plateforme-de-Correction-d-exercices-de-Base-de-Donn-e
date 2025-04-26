@@ -1,23 +1,32 @@
+// backend/routes/sujetRoutes.js
 const express = require('express');
 const multer  = require('multer');
+const path    = require('path');
 const router  = express.Router();
 const svc     = require('../services/sujetService');
 const rapportService = require('../services/rapportService');
 const soumissionService = require('../services/soumissionService');
-const fileStorage = require('../services/fileStorageServices'); // AWS S3
 
-// Multer pour upload en mémoire
-const upload = multer({ storage: multer.memoryStorage() });
+// Multer config pour stocker les PDF
+const storage = multer.diskStorage({
+  destination: (req, file, cb) =>
+    cb(null, path.join(__dirname, '../uploads')),
+  filename: (req, file, cb) => {
+    const uniq = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, `${uniq}${path.extname(file.originalname)}`);
+  }
+});
+const upload = multer({ storage });
 
 // GET /api/sujets
 router.get('/', async (req, res) => {
-  try {
-    const sujets = await svc.getAll();
-    res.json(sujets);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+    try {
+      const sujets = await svc.getAll();
+      res.json(sujets);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 // GET /api/sujets/:id
 router.get('/:id', async (req, res) => {
@@ -29,14 +38,13 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// GET /api/sujets/:id/soumission
 router.get('/:id/soumission', async (req, res) => {
   const etudiantId = req.user.id; // ou req.query.userId en dev
   const soum = await soumissionService.getBySujetAndUser(req.params.id, etudiantId);
   res.json(soum || {});
 });
 
-// GET /api/sujets/:id/rapports
+//  Renvoie la liste des soumissions pour le sujet :id
 router.get('/:id/rapports', async (req, res) => {
   try {
     const rapports = await rapportService.getBySujet(req.params.id);
@@ -47,21 +55,11 @@ router.get('/:id/rapports', async (req, res) => {
   }
 });
 
-// POST /api/sujets (créer un sujet avec upload S3)
+// POST /api/sujets (créer un sujet)
 router.post('/', upload.single('referenceFile'), async (req, res) => {
   try {
     const { titre, description, dateLimite, professeurId } = req.body;
-    let referenceFilePath = null;
-
-    if (req.file) {
-      const { buffer, originalname, mimetype } = req.file;
-      const fileName = `sujets/${Date.now()}-${originalname}`;
-      
-      // Upload S3
-      await fileStorage.uploadFile(buffer, fileName, mimetype);
-      referenceFilePath = fileName; // Stocker chemin S3
-    }
-
+    const referenceFilePath = req.file ? `/uploads/${req.file.filename}` : '';
     const nouveau = await svc.create({
       titre,
       description,
@@ -69,15 +67,13 @@ router.post('/', upload.single('referenceFile'), async (req, res) => {
       referenceFilePath,
       professeurId
     });
-
     res.status(201).json(nouveau);
   } catch (err) {
-    console.error('Erreur POST /sujets:', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-// POST /api/sujets/:id/correction-model (garde disque local ou ajuste si tu veux S3)
+// POST /api/sujets/:id/correction-model
 router.post('/:id/correction-model', upload.single('modelFile'), async (req, res) => {
   try {
     const filePath = req.file ? `/uploads/${req.file.filename}` : '';

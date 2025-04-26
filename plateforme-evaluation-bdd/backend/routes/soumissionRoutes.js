@@ -1,32 +1,12 @@
-// backend/routes/soumissionRoutes.js
 const express = require('express');
 const multer  = require('multer');
-const path    = require('path');
 const router  = express.Router();
 const soumService = require('../services/soumissionService');
+const fileStorage = require('../services/fileStorageServices'); // AWS S3
 
-// Multer pour réception PDF de dépôt
-const storageSoumissions = multer.diskStorage({
-  destination: (req, file, cb) =>
-    cb(null, path.join(__dirname,'../uploads/soumissions')),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, Date.now() + ext);
-  }
-});
-const uploadSoumission = multer({ storage: storageSoumissions });
+const uploadSoumission = multer({ storage: multer.memoryStorage() });
 
-// UTILITAIRE pour récupérer l’ID de l’étudiant
-function getUserId(req) {
-  // 1) si authentifié via JWT/session
-  if (req.user && req.user.id) return req.user.id;
-  // 2) sinon, en dev, on autorise un fallback via body
-  if (req.body.etudiantId) return req.body.etudiantId;
-  // 3) rien → on renvoie une 400
-  return null;
-}
-
-// GET /api/submissions -> lister les soumissions du user actuel (ou via body.etudiantId en dev)
+// GET /api/soumissions -> lister les soumissions du user actuel
 router.get('/', async (req, res) => {
   try {
     const userId = (req.user && req.user.id)
@@ -42,9 +22,100 @@ router.get('/', async (req, res) => {
   }
 });
 
+// POST /api/soumissions -> nouvelle soumission avec upload S3
+router.post('/', uploadSoumission.single('file'), async (req, res) => {
+  try {
+    const userId = parseInt(req.body.userId, 10);
+    const sujetId = parseInt(req.body.sujetId, 10);
+    if (!userId || !sujetId) {
+      return res.status(400).json({ error: 'userId et sujetId requis' });
+    }
+
+    console.log('📥 Fichier reçu:', req.file);
+    console.log('📦 Body reçu:', req.body);
+
+    if (!req.file) {
+      console.error('❌ Aucun fichier trouvé');
+      return res.status(400).json({ error: 'Aucun fichier fourni.' });
+    }
+
+    const { buffer, originalname, mimetype } = req.file;
+    const fileName = `soumissions/${Date.now()}-${originalname}`;
+
+    console.log('🚀 Envoi vers S3:', fileName);
+    await fileStorage.uploadFile(buffer, fileName, mimetype);
+    console.log('✅ Upload S3 terminé');
+
+    // Enregistrement dans la BDD
+    const soum = await soumService.create(sujetId, userId, fileName);
+    console.log('💾 Soumission enregistrée:', soum);
+
+    // Génération d'une URL signée
+    const signedUrl = await fileStorage.generateSignedUrl(fileName);
+    console.log('🔗 Signed URL générée:', signedUrl);
+
+    res.status(201).json({ soum, downloadUrl: signedUrl });
+  } catch (err) {
+    console.error('❌ Erreur POST /soumissions:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/soumissions/signed-url?id=10
+router.get('/signed-url', async (req, res) => {
+  try {
+    const { id } = req.query;
+    if (!id) {
+      return res.status(400).json({ error: 'ID de soumission requis' });
+    }
+
+    // 1️⃣ On récupère la soumission en BDD
+    const soumission = await soumService.getById(id);  // ou Soumission.findByPk(id)
+    if (!soumission) {
+      return res.status(404).json({ error: 'Soumission non trouvée' });
+    }
+
+    const path = soumission.chemin_fichier_pdf;  // 2️⃣ On récupère le chemin complet
+    console.log('Chemin fichier récupéré depuis BDD:', path);  // 🔍 Check le chemin exact
+
+    // 3️⃣ Génération de la signed URL avec le bon chemin
+    const signedUrl = await fileStorage.generateSignedUrl(path);
+    res.json({ url: signedUrl });
+  } catch (err) {
+    console.error('❌ Erreur GET /soumissions/signed-url:', err);
+    res.status(500).json({ error: 'Erreur lors de la génération de l’URL signée.' });
+  }
+});
+
+
+
+// PUT /api/soumissions/:id -> remplacer fichier (upload S3)
+router.put('/:id', uploadSoumission.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier fourni.' });
+    }
+
+    const { buffer, originalname, mimetype } = req.file;
+    const fileName = `soumissions/${Date.now()}-${originalname}`;
+
+    console.log('🚀 Remplacement vers S3:', fileName);
+    await fileStorage.uploadFile(buffer, fileName, mimetype);
+    console.log('✅ Remplacement S3 terminé');
+
+    const data = { chemin_fichier_pdf: fileName, etat: 'SOUMIS' };
+    await soumService.update(req.params.id, data);
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/soumissions/allSubs -> lister toutes les soumissions
 router.get('/allSubs', async (req, res) => res.json(await soumService.getAll()));
 
-// GET /api/submissions/:id -> détail
+// GET /api/soumissions/:id -> détail
 router.get('/:id', async (req, res) => {
   try {
     const s = await soumService.getById(req.params.id);
@@ -55,84 +126,40 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/submissions -> nouvelle soumission
-router.post(
-  '/',
-  uploadSoumission.single('file'),
-  async (req, res) => {
-    try {
-      // on lit userId passé dans le body
-      const userId = parseInt(req.body.userId, 10);
-      const sujetId = parseInt(req.body.sujetId, 10);
-      if (!userId || !sujetId) {
-        return res.status(400).json({ error: 'userId et sujetId requis' });
-      }
-
-      const filePath = req.file
-        ? `/uploads/soumissions/${req.file.filename}`
-        : '';
-      const soum = await soumService.create(sujetId, userId, filePath);
-      res.status(201).json(soum);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
-
-
-router.get('/stats/sub', async (req, res) => {
-  try {
-    const stats = await soumService.getStats();
-    res.json(stats);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PUT /api/submissions/:id -> remplacer fichier
-router.put(
-  '/:id',
-  uploadSoumission.single('file'),
-  async (req, res) => {
-    try {
-      const filePath = req.file ? `/uploads/soumissions/${req.file.filename}` : null;
-      const data = { chemin_fichier_pdf: filePath, etat: 'SOUMIS' };
-      await soumService.update(req.params.id, data);
-      res.json({ success: true });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: err.message });
-    }
-  }
-);
-
+// PUT correction
 router.put('/:id/correction', async (req, res) => {
   try {
     const { note_final, commentaire_prof } = req.body;
-    // on met à jour note_final, commentaire_prof et l'état
     await soumService.update(req.params.id, {
       note_final,
       commentaire_prof,
       etat: 'CORRIGE'
     });
-    // renvoyer la soumission mise à jour
     const updated = await soumService.getById(req.params.id);
     res.json(updated);
   } catch (err) {
-    console.error('Erreur mise à jour correction :', err);
+    console.error('Erreur mise à jour correction :', err);
     res.status(400).json({ error: err.message });
   }
 });
 
-// DELETE /api/submissions/:id -> retirer son dépôt
+// DELETE /api/soumissions/:id -> retirer son dépôt
 router.delete('/:id', async (req, res) => {
   try {
     await soumService.remove(req.params.id);
     res.json({ success: true });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Stats
+router.get('/stats/sub', async (req, res) => {
+  try {
+    const stats = await soumService.getStats();
+    res.json(stats);
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });

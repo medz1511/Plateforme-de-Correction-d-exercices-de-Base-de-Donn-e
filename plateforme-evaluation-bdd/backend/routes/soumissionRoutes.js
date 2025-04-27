@@ -61,33 +61,41 @@ router.post('/', uploadSoumission.single('file'), async (req, res) => {
   }
 });
 
-// GET /api/soumissions/signed-url?id=10
+// GET /api/soumissions/signed-url -> générer une signed URL à partir du chemin ou de l'id
 router.get('/signed-url', async (req, res) => {
   try {
-    const { id } = req.query;
-    if (!id) {
-      return res.status(400).json({ error: 'ID de soumission requis' });
+    const { path, id } = req.query;
+
+    if (!path && !id) {
+      return res.status(400).json({ error: 'Chemin ou ID requis' });
     }
 
-    // 1️⃣ On récupère la soumission en BDD
-    const soumission = await soumService.getById(id);  // ou Soumission.findByPk(id)
+    // Si chemin fourni (cas du front)
+    if (path) {
+      // Cas local : fichier dans /uploads/
+      if (path.startsWith('uploads/')) {
+        return res.json({ url: '/' + path });  // renvoie l'URL locale
+      }
+
+      // Cas S3 : génère une signed URL
+      const signedUrl = await fileStorage.generateSignedUrl(path);
+      return res.json({ url: signedUrl });
+    }
+
+    // Sinon, si id fourni (ancienne logique)
+    const soumission = await soumService.getById(id);
     if (!soumission) {
       return res.status(404).json({ error: 'Soumission non trouvée' });
     }
 
-    const path = soumission.chemin_fichier_pdf;  // 2️⃣ On récupère le chemin complet
-    console.log('Chemin fichier récupéré depuis BDD:', path);  // 🔍 Check le chemin exact
-
-    // 3️⃣ Génération de la signed URL avec le bon chemin
-    const signedUrl = await fileStorage.generateSignedUrl(path);
+    const filePath = soumission.chemin_fichier_pdf;
+    const signedUrl = await fileStorage.generateSignedUrl(filePath);
     res.json({ url: signedUrl });
   } catch (err) {
     console.error('❌ Erreur GET /soumissions/signed-url:', err);
     res.status(500).json({ error: 'Erreur lors de la génération de l’URL signée.' });
   }
 });
-
-
 
 // PUT /api/soumissions/:id -> remplacer fichier (upload S3)
 router.put('/:id', uploadSoumission.single('file'), async (req, res) => {

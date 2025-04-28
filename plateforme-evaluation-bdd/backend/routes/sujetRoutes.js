@@ -6,8 +6,6 @@ const rapportService = require('../services/rapportService');
 const soumissionService = require('../services/soumissionService');
 const fileStorage = require('../services/fileStorageServices'); // AWS S3
 
-
-
 // Multer pour upload en mémoire
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -19,11 +17,8 @@ router.get('/:id/signed-url', async (req, res) => {
       return res.status(404).json({ error: "Sujet introuvable ou fichier manquant." });
     }
 
-    // Nettoyer le chemin (enlève /uploads/)
     const cleanPath = sujet.chemin_fichier_pdf.replace(/^\/?uploads\//, '');
-
-    console.log('📝 Chemin nettoyé:', cleanPath); // <-- Vérifie le chemin envoyé à S3
-
+    console.log('📝 Chemin nettoyé:', cleanPath);
     const signedUrl = await fileStorage.generateSignedUrl(cleanPath);
     res.json({ url: signedUrl });
   } catch (err) {
@@ -32,7 +27,21 @@ router.get('/:id/signed-url', async (req, res) => {
   }
 });
 
+// GET /api/sujets/:id/model-signed-url -> Génère la signed URL du modèle de correction
+router.get('/:id/model-signed-url', async (req, res) => {
+  try {
+    const sujet = await svc.getById(req.params.id);
+    if (!sujet || !sujet.chemin_fichier_correction_pdf) {
+      return res.status(404).json({ error: "Modèle de correction introuvable" });
+    }
 
+    const signedUrl = await fileStorage.generateSignedUrl(sujet.chemin_fichier_correction_pdf);
+    res.json({ url: signedUrl });
+  } catch (err) {
+    console.error('❌ Erreur GET /sujets/:id/model-signed-url:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/sujets
 router.get('/', async (req, res) => {
@@ -43,9 +52,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-
 
 // GET /api/sujets/:id
 router.get('/:id', async (req, res) => {
@@ -59,7 +65,7 @@ router.get('/:id', async (req, res) => {
 
 // GET /api/sujets/:id/soumission
 router.get('/:id/soumission', async (req, res) => {
-  const etudiantId = req.user.id; // ou req.query.userId en dev
+  const etudiantId = req.user.id;
   const soum = await soumissionService.getBySujetAndUser(req.params.id, etudiantId);
   res.json(soum || {});
 });
@@ -84,10 +90,8 @@ router.post('/', upload.single('referenceFile'), async (req, res) => {
     if (req.file) {
       const { buffer, originalname, mimetype } = req.file;
       const fileName = `sujets/${Date.now()}-${originalname}`;
-      
-      // Upload S3
       await fileStorage.uploadFile(buffer, fileName, mimetype);
-      referenceFilePath = fileName; // Stocker chemin S3
+      referenceFilePath = fileName;
     }
 
     const nouveau = await svc.create({
@@ -105,13 +109,19 @@ router.post('/', upload.single('referenceFile'), async (req, res) => {
   }
 });
 
-// POST /api/sujets/:id/correction-model (garde disque local ou ajuste si tu veux S3)
+// POST /api/sujets/:id/correction-model -> Upload modèle de correction vers S3 (dossier models/)
 router.post('/:id/correction-model', upload.single('modelFile'), async (req, res) => {
   try {
-    const filePath = req.file ? `/uploads/${req.file.filename}` : '';
-    const updated = await svc.uploadCorrectionModel(req.params.id, filePath);
+    if (!req.file) {
+      return res.status(400).json({ error: "Aucun fichier fourni" });
+    }
+
+    const { buffer, originalname, mimetype } = req.file;
+    const updated = await svc.uploadCorrectionModel(req.params.id, buffer, originalname, mimetype);
+
     res.json(updated);
   } catch (err) {
+    console.error('Erreur POST /sujets/:id/correction-model:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -135,7 +145,5 @@ router.delete('/:id', async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
-
-
 
 module.exports = router;

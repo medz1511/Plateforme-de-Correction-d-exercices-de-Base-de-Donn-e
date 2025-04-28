@@ -1,27 +1,25 @@
 // backend/services/sujetService.js
 const db = require('../models');
-const emailService = require('./emailService'); 
+const emailService = require('./emailService');
+const fileStorage = require('./fileStorageServices');  // Pour l'upload S3
 
 module.exports = {
   /**
    * Récupère tous les sujets publiés par un professeur
-   * @param {number} professeurId
    */
   getAll: () => {
-      return db.sujet.findAll({
-        include: db.utilisateur,
-        order: [['date_creation', 'DESC']]
-      });
-    },
+    return db.sujet.findAll({
+      include: db.utilisateur,
+      order: [['date_creation', 'DESC']]
+    });
+  },
 
   /**
    * Récupère un sujet par son ID
-   * @param {number} id
    */
   getById: id => db.sujet.findByPk(id, {
-    include: [{ model: db.utilisateur, as: 'utilisateur', attributes: ['id','nom','prenom'] }]
+    include: [{ model: db.utilisateur, as: 'utilisateur', attributes: ['id', 'nom', 'prenom'] }]
   }),
-
 
   /**
    * Crée un nouveau sujet
@@ -39,7 +37,6 @@ module.exports = {
     if (sujet.etat === 'PUBLIE') {
       await emailService.sendEmailToStudents(sujet);
     }
-
     return sujet;
   },
 
@@ -49,14 +46,12 @@ module.exports = {
   update: async (id, data) => {
     const sujet = await db.sujet.findByPk(id);
     if (!sujet) throw new Error('Sujet non trouvé');
-    
+
     const updatedSujet = await sujet.update(data);
 
-    // Si le sujet est désormais publié, envoyez un e-mail aux étudiants
     if (updatedSujet.etat === 'PUBLIE') {
       await emailService.sendEmailToStudents(updatedSujet);
     }
-
     return updatedSujet;
   },
 
@@ -68,15 +63,19 @@ module.exports = {
   },
 
   /**
-   * Upload / met à jour le modèle de correction pour un sujet
-   * @param {number} id 
-   * @param {string} filePath 
+   * Upload / met à jour le modèle de correction pour un sujet (dans models/)
    */
-  uploadCorrectionModel: async (id, filePath) => {
+  uploadCorrectionModel: async (sujetId, buffer, originalname, mimetype) => {
+    const sujet = await db.sujet.findByPk(sujetId);
+    if (!sujet) throw new Error('Sujet non trouvé');
+
+    const filePath = `models/${Date.now()}-${originalname}`;  // Dossier models/
+    await fileStorage.uploadFile(buffer, filePath, mimetype);
+
     await db.sujet.update(
-      { chemin_fichier_correction_pdf: filePath },
-      { where: { id } }
+      { chemin_fichier_correction_pdf: filePath },  // Stocke le chemin relatif
+      { where: { id: sujetId } }
     );
-    return db.sujet.findByPk(id);
+    return db.sujet.findByPk(sujetId);
   }
 };

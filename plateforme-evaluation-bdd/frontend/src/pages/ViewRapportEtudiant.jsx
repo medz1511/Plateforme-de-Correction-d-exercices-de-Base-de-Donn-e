@@ -334,17 +334,12 @@ const ViewRapportEtudiant = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDownloadSubject(ex); // ex est l'objet du sujet
-                            }}
-                            className={`p-1 rounded-md ${darkMode ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
-                            title="Télécharger le sujet"
-                          >
+                          <button onClick={() => handleReportView(r.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
+                            <Eye size={16} />
+                          </button>
+                          <button onClick={() => handleReportDownload(r.id)} className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}>
                             <Download size={16} />
                           </button>
-
                           {r.statut === 'En attente' && (
                             <button
                               className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}

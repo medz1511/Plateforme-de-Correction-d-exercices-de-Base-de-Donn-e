@@ -1,3 +1,4 @@
+// src/pages/ViewRapportEtudiant.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Eye,
@@ -12,10 +13,9 @@ import {
 import Header from '../components/common/Header';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
-
 import { fetchSujets } from '../services/sujetService';
 import { fetchRapportsBySujet } from '../services/rapportService';
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import axiosInstance from '../services/api'; // Pour signed URL S3
 
 const ViewRapportEtudiant = () => {
   const { darkMode } = useTheme();
@@ -30,7 +30,6 @@ const ViewRapportEtudiant = () => {
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState(null);
 
-  // Stats
   const totalSubmissions = rapports.length;
   const totalPending = rapports.filter(r => r.statut === 'En attente').length;
 
@@ -46,7 +45,7 @@ const ViewRapportEtudiant = () => {
       .then(res => {
         const data = res.data.map(r => ({
           id: r.id,
-          exerciceId: r.sujet_id,
+          sujetId: r.sujet_id,
           etudiant: `${r.utilisateur.prenom} ${r.utilisateur.nom}`,
           email: r.utilisateur.email,
           dateRemise: new Date(r.date_soumission).toLocaleDateString('fr-FR'),
@@ -67,68 +66,114 @@ const ViewRapportEtudiant = () => {
     )
     .filter(r => statusFilter === 'all' || r.statut === statusFilter);
 
-  const openSubjectPdf = (sujet) => {
-    setSelectedPdf({
-      exerciseTitle: sujet.titre,
-      pdfUrl: sujet.chemin_fichier_pdf
-    });
-    setShowPdfViewer(true);
+  // Voir le sujet depuis AWS S3 via signed URL
+  const openSubjectPdf = async (sujet) => {
+    try {
+      const response = await axiosInstance.get(`/sujets/${sujet.id}/signed-url`);
+      setSelectedPdf({
+        exerciseTitle: sujet.titre,
+        pdfUrl: response.data.url
+      });
+      setShowPdfViewer(true);
+    } catch (error) {
+      console.error("Erreur affichage sujet :", error);
+      alert("Impossible d'afficher le sujet.");
+    }
   };
 
-  // Fonction ajoutée pour visualiser un rapport
-  const handleReportView = (rapportId) => {
+  const handleDownloadSubject = async (sujet) => {
+    try {
+      console.log("Téléchargement sujet:", sujet);
+
+      const response = await axiosInstance.get(`/sujets/${sujet.id}/signed-url`);
+      const downloadUrl = response.data.url;
+      console.log("URL de téléchargement:", downloadUrl);
+
+      // Crée un lien temporaire et clique dessus
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `${sujet.titre}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    } catch (err) {
+      console.error("❌ Erreur téléchargement sujet :", err);
+      alert("Erreur lors du téléchargement du fichier sujet.");
+    }
+  };
+
+
+
+
+  // Voir une soumission étudiant via signed URL
+  const handleReportView = async (rapportId) => {
     const rapport = rapports.find(r => r.id === rapportId);
     if (!rapport || !rapport.chemin_fichier_pdf) {
       alert("Le fichier PDF n'est pas disponible.");
       return;
     }
-    
-    setSelectedPdf({
-      exerciseTitle: `Rapport de ${rapport.etudiant}`,
-      pdfUrl: rapport.chemin_fichier_pdf
-    });
-    setShowPdfViewer(true);
+
+    try {
+      const cleanPath = rapport.chemin_fichier_pdf.replace(/^\/?uploads\//, '');
+      const response = await axiosInstance.get(`/soumissions/signed-url`, {
+        params: { path: cleanPath }
+      });
+
+      setSelectedPdf({
+        exerciseTitle: `Rapport de ${rapport.etudiant}`,
+        pdfUrl: response.data.url
+      });
+      setShowPdfViewer(true);
+    } catch (error) {
+      console.error("Erreur affichage soumission :", error);
+      alert("Erreur lors de l'affichage de la soumission.");
+    }
   };
 
-  // Fonction ajoutée pour télécharger un rapport
-  const handleReportDownload = (rapportId) => {
+  // Télécharger une soumission via signed URL
+  const handleReportDownload = async (rapportId) => {
     const rapport = rapports.find(r => r.id === rapportId);
     if (!rapport || !rapport.chemin_fichier_pdf) {
       alert("Le fichier PDF n'est pas disponible.");
       return;
     }
-    
-    const link = document.createElement('a');
-    link.href = `${API_BASE}${rapport.chemin_fichier_pdf}`;
-    link.download = `Rapport_${rapport.etudiant}_${new Date().toISOString().split('T')[0]}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const cleanPath = rapport.chemin_fichier_pdf.replace(/^\/?uploads\//, '');
+      const response = await axiosInstance.get(`/soumissions/signed-url`, { params: { path: cleanPath } });
+      const fileUrl = response.data.url;
+
+      const fileBlob = await fetch(fileUrl).then(res => res.blob());
+      const blobUrl = window.URL.createObjectURL(fileBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `Rapport_${rapport.etudiant}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+    } catch (err) {
+      console.error("Erreur téléchargement rapport:", err);
+      alert("Erreur lors du téléchargement du rapport.");
+    }
   };
 
-  // Fonction pour télécharger tous les rapports en ZIP
+
+  // Téléchargement ZIP complet
   const handleDownloadAll = () => {
     if (rapports.length === 0) {
       alert("Aucun rapport disponible à télécharger.");
       return;
     }
-    
-    // Vous devrez créer une API backend pour gérer cette fonctionnalité
-    // Pour l'instant, on simule un appel API
-    fetch(`${API_BASE}/api/rapports/download-all/${selectedExerciseId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+
+    fetch(`/api/rapports/download-all/${selectedExerciseId}`)
       .then(response => {
-        if (!response.ok) {
-          throw new Error('Erreur lors du téléchargement');
-        }
+        if (!response.ok) throw new Error('Erreur backend');
         return response.blob();
       })
       .then(blob => {
-        const url = window.URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `Tous_les_rapports_${new Date().toISOString().split('T')[0]}.zip`;
@@ -136,11 +181,11 @@ const ViewRapportEtudiant = () => {
         link.click();
         document.body.removeChild(link);
       })
-      .catch(error => {
-        console.error('Erreur lors du téléchargement:', error);
-        alert('Impossible de télécharger tous les rapports. Veuillez réessayer plus tard.');
+      .catch(err => {
+        console.error('Erreur ZIP:', err);
+        alert('Impossible de télécharger tous les rapports.');
       });
-  };
+  }
 
   const ExercisesList = () => (
     <div className={`rounded-lg shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
@@ -155,9 +200,7 @@ const ViewRapportEtudiant = () => {
           <div
             key={ex.id}
             onClick={() => setSelectedExerciseId(ex.id)}
-            className={`p-4 rounded-md cursor-pointer transition-colors ${
-              darkMode ? 'bg-gray-750 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'
-            }`}
+            className={`p-4 rounded-md cursor-pointer transition-colors ${darkMode ? 'bg-gray-750 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'}`}
           >
             <h3 className={`font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{ex.titre}</h3>
             <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Description : {ex.description}</div>
@@ -177,18 +220,15 @@ const ViewRapportEtudiant = () => {
                   <button
                     onClick={e => {
                       e.stopPropagation();
-                      const link = document.createElement('a');
-                      link.href = `${API_BASE}${ex.chemin_fichier_pdf}`;
-                      link.download = `${ex.titre}.pdf`;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
+                      handleDownloadSubject(ex);
                     }}
                     className={`p-1 rounded-md ${darkMode ? 'bg-gray-900 hover:bg-gray-800 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
                     title="Télécharger le sujet"
                   >
                     <Download size={16} />
                   </button>
+
+
                 </>
               )}
             </div>
@@ -197,6 +237,7 @@ const ViewRapportEtudiant = () => {
       </div>
     </div>
   );
+
 
   const ReportsList = () => {
     const exercice = sujets.find(s => s.id === selectedExerciseId);
@@ -224,7 +265,7 @@ const ViewRapportEtudiant = () => {
               <span className={`px-3 py-1 rounded-md text-sm ${darkMode ? 'bg-yellow-900 text-yellow-100' : 'bg-yellow-100 text-yellow-800'}`}>
                 {totalPending} en attente
               </span>
-              <button 
+              <button
                 onClick={handleDownloadAll}
                 className={`px-3 py-1 rounded-md text-white ${darkMode ? 'bg-green-600 hover:bg-green-500' : 'bg-green-500 hover:bg-green-600'}`}>
                 Télécharger tout
@@ -279,11 +320,10 @@ const ViewRapportEtudiant = () => {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">{r.dateRemise}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          r.statut === 'Corrigé'
-                            ? (darkMode ? 'bg-green-900 text-green-100' : 'bg-green-100 text-green-800')
-                            : (darkMode ? 'bg-yellow-900 text-yellow-100' : 'bg-yellow-100 text-yellow-800')
-                        }`}>{r.statut}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${r.statut === 'Corrigé'
+                          ? (darkMode ? 'bg-green-900 text-green-100' : 'bg-green-100 text-green-800')
+                          : (darkMode ? 'bg-yellow-900 text-yellow-100' : 'bg-yellow-100 text-yellow-800')
+                          }`}>{r.statut}</span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm">{r.note}</td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -301,7 +341,7 @@ const ViewRapportEtudiant = () => {
                             <Download size={16} />
                           </button>
                           {r.statut === 'En attente' && (
-                            <button 
+                            <button
                               className={`p-1.5 rounded-md ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
                               onClick={() => {
                                 // Implémenter la validation du rapport ici
@@ -338,16 +378,12 @@ const ViewRapportEtudiant = () => {
       {selectedExerciseId ? <ReportsList /> : <ExercisesList />}
       {showPdfViewer && selectedPdf && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-5xl h-4/5 transition-colors duration-300`}>
+          <div className={`${darkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} rounded-xl p-6 w-full max-w-5xl h-4/5`}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">{selectedPdf.exerciseTitle}</h2>
               <button onClick={() => setShowPdfViewer(false)}><X size={24} /></button>
             </div>
-            <iframe
-              src={`${API_BASE}${selectedPdf.pdfUrl}`}
-              className="w-full h-full rounded"
-              title={selectedPdf.exerciseTitle}
-            />
+            <iframe src={selectedPdf.pdfUrl} className="w-full h-full rounded" title={selectedPdf.exerciseTitle} />
           </div>
         </div>
       )}

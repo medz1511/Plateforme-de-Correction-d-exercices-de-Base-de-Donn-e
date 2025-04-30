@@ -1,4 +1,5 @@
 // src/pages/AccesSujetsDeposesEtudiant.jsx
+import axiosInstance from '../services/api';
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -97,11 +98,41 @@ export default function AccesSujetsDeposesEtudiant() {
   };
 
   // Ouvre la visionneuse PDF
-  const openPdfViewer = (title, path) => {
+  /*const openPdfViewer = (title, path) => {
     setSelectedPdf({ title, path });
     setShowPdfViewer(true);
   };
-  const closePdfViewer = () => setShowPdfViewer(false);
+  const closePdfViewer = () => setShowPdfViewer(false);*/
+
+// Nouvelle fonction avec récupération de la signed URL du sujet (professeur)
+const openPdfViewer = async (title, sujetFilePath) => {
+  try {
+    // Envoie le chemin du fichier sujet (chemin_fichier_pdf)
+    const response = await axiosInstance.get(`/sujets/${sujetFilePath}/signed-url`);
+    const signedUrl = response.data.url;
+    setSelectedPdf({ title, path: signedUrl });
+    setShowPdfViewer(true);
+  } catch (error) {
+    console.error('Erreur récupération URL signée:', error);
+  }
+};
+
+//Fonction pour récupérer la signed URL du rendu étudiant
+
+const openStudentPdfViewer = async (title, soumissionId) => {
+  try {
+    const response = await axiosInstance.get('/soumissions/signed-url', { params: { id: soumissionId } });
+    const signedUrl = response.data.url;
+    setSelectedPdf({ title, path: signedUrl });
+    setShowPdfViewer(true);
+  } catch (error) {
+    console.error('Erreur récupération URL signée (soumission):', error);
+  }
+};
+
+
+  // Fonction closePdfViewer pour fermer le PDF
+ const closePdfViewer = () => setShowPdfViewer(false);
 
   // Téléchargement
   const download = (path,name) => {
@@ -198,8 +229,8 @@ export default function AccesSujetsDeposesEtudiant() {
                   />
 
                   {/* Voir PDF du sujet */}
-                  <button
-                    onClick={()=>openPdfViewer(s.titre,s.chemin_fichier_pdf)}
+                  <button onClick={() => openPdfViewer(s.titre, s.id)}
+
                     className={`flex-1 flex items-center justify-center gap-1 py-2 rounded ${
                       darkMode?"bg-violet-600 hover:bg-violet-700":"bg-violet-500 hover:bg-violet-600"
                     } text-white`}
@@ -318,11 +349,7 @@ export default function AccesSujetsDeposesEtudiant() {
                 </p>
 
                 {sub && (
-  <button
-    onClick={() => openPdfViewer(
-      sujet.titre,            // ou un titre plus parlant
-      sub.chemin_fichier_pdf
-    )}
+  <button onClick={() => openStudentPdfViewer(sujet.titre, sub.id)}
     className={`mb-6 px-4 py-2 rounded ${
       darkMode ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-500 hover:bg-violet-600"
     } text-white`}
@@ -399,21 +426,22 @@ export default function AccesSujetsDeposesEtudiant() {
 
         {/* Visionneuse PDF */}
         {showPdfViewer && selectedPdf.path && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className={`w-full max-w-5xl h-4/5 p-6 rounded-lg transition-colors ${
-              darkMode?"bg-gray-800 text-gray-100":"bg-white text-gray-900"
-            }`}>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">{selectedPdf.title}</h2>
-                <button onClick={closePdfViewer}><X size={24}/></button>
-              </div>
-              <iframe
-                src={`${API}${selectedPdf.path}`}
-                className="w-full h-full rounded"
-                title={selectedPdf.title}
-              />
-            </div>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className={`w-full max-w-5xl h-4/5 p-6 rounded-lg transition-colors ${
+        darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
+      }`}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{selectedPdf.title}</h2>
+          <button onClick={closePdfViewer}><X size={24}/></button>
+        </div>
+        <iframe
+  src={selectedPdf.path} 
+  className="w-full h-full rounded"
+  title={selectedPdf.title}
+/>
+
+      </div>
+    </div>
         )}
       </main>
     </div>

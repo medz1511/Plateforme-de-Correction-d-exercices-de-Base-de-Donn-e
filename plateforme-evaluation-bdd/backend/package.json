@@ -7,12 +7,16 @@
     "sync": "node syncDatabase.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@aws-sdk/s3-request-presigner": "^3.787.0",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "express-session": "^1.18.1",
+    "form-data": "^4.0.2",
     "google-auth-library": "^9.15.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.2",
@@ -23,6 +27,7 @@
     "passport-azure-ad": "^4.3.5",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-parse": "^1.1.1",
     "sequelize": "^6.31.1"
   }
 }

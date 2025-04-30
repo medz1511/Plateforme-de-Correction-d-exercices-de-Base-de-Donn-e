@@ -23,7 +23,7 @@ import {
 } from "../services/sujetService";
 import API from "../services/api"; // axios instance
 
-import {correctSujet} from "../services/iaService"; // axios instance
+import { correctSujet } from "../services/iaService"; // IA service
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -31,16 +31,13 @@ export default function CorrectionModelsPage() {
   const { darkMode, toggleTheme } = useTheme();
   const [confirm, setConfirm] = useState({ open: false, sujetId: null });
 
-  // Modal & PDF viewer state
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPdfViewer, setShowPdfViewer] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [selectedPdf, setSelectedPdf] = useState(null);
 
-  // Loaded correction models
   const [models, setModels] = useState([]);
 
-  // Load all sujets/models
   const loadModels = async () => {
     try {
       const res = await fetchSujets();
@@ -62,25 +59,6 @@ export default function CorrectionModelsPage() {
     loadModels();
   }, []);
 
-  // Automatic correction handler
-  const handleAutoCorrectClick = (sujetId) => {
-        setConfirm({ open: true, sujetId });
-       };
-    
-      // la vraie exécution après confirmation
-        const handleAutoCorrectConfirm = async () => {
-       const sujetId = confirm.sujetId;
-       setConfirm({ open: false, sujetId: null });
-       try {
-         await correctSujet(sujetId);
-         alert("Corrections automatiques terminées !");
-         loadModels();
-       } catch (err) {
-          console.error("Erreur IA :", err);
-          alert("Erreur lors de la correction automatique.");
-        }
-      };
-  // Delete model
   const handleDeleteModel = async (model) => {
     if (!window.confirm("Supprimer ce modèle ?")) return;
     try {
@@ -91,7 +69,6 @@ export default function CorrectionModelsPage() {
     }
   };
 
-  // Submit new or updated model
   const handleSubmitModel = async ({ pdfFile }) => {
     if (!selectedExercise) return;
     try {
@@ -104,7 +81,49 @@ export default function CorrectionModelsPage() {
     }
   };
 
-  // Stats cards data
+  const handleAutoCorrectClick = (sujetId) => {
+    setConfirm({ open: true, sujetId });
+  };
+
+  const handleAutoCorrectConfirm = async () => {
+    const sujetId = confirm.sujetId;
+    setConfirm({ open: false, sujetId: null });
+    try {
+      await correctSujet(sujetId);
+      alert("Corrections automatiques terminées !");
+      loadModels();
+    } catch (err) {
+      console.error("Erreur IA :", err);
+      alert("Erreur lors de la correction automatique.");
+    }
+  };
+
+  const openPdfViewer = async (model) => {
+    try {
+      const response = await API.get(`/sujets/${model.id}/model-signed-url`);
+      setSelectedPdf({ title: model.exerciseTitle, url: response.data.url });
+      setShowPdfViewer(true);
+    } catch (error) {
+      console.error("Erreur récupération signed URL :", error);
+      alert("Erreur lors de la récupération du modèle.");
+    }
+  };
+
+  const openSujetViewer = async (model) => {
+    try {
+      const response = await API.get(`/sujets/${model.id}/signed-url`);
+      setSelectedPdf({ title: model.exerciseTitle, url: response.data.url });
+      setShowPdfViewer(true);
+    } catch (error) {
+      console.error("Erreur récupération sujet signed URL :", error);
+    }
+  };
+
+
+
+
+  const closePdfViewer = () => setShowPdfViewer(false);
+
   const stats = [
     {
       name: "Total des modèles",
@@ -133,17 +152,15 @@ export default function CorrectionModelsPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={`p-6 w-full min-h-screen ${
-        darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"
-      } transition-colors duration-300`}
+      className={`p-6 w-full min-h-screen ${darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"
+        } transition-colors duration-300`}
     >
       <Header title="Modèles de correction" darkMode={darkMode}>
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
-            className={`px-4 py-2 rounded-md ${
-              darkMode ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-800"
-            }`}
+            className={`px-4 py-2 rounded-md ${darkMode ? "bg-indigo-600 text-white" : "bg-indigo-100 text-indigo-800"
+              }`}
           >
             {darkMode ? "Mode Clair ☀️" : "Mode Sombre 🌙"}
           </button>
@@ -159,7 +176,6 @@ export default function CorrectionModelsPage() {
         </div>
       </Header>
 
-      {/* StatCards */}
       <motion.div
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mb-8"
         initial={{ opacity: 0, y: 20 }}
@@ -171,7 +187,6 @@ export default function CorrectionModelsPage() {
         ))}
       </motion.div>
 
-      {/* Models Table */}
       <div className={`mt-8 rounded-xl p-6 ${darkMode ? "bg-gray-800" : "bg-white shadow"}`}>
         <h2 className={`text-xl font-semibold mb-4 ${darkMode ? "text-gray-100" : "text-gray-800"}`}>
           Modèles de correction par exercice
@@ -191,18 +206,14 @@ export default function CorrectionModelsPage() {
               {models.map((model) => (
                 <tr
                   key={model.id}
-                  className={`border-b ${
-                    darkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
-                  }`}
+                  className={`border-b ${darkMode ? "hover:bg-gray-700/50" : "hover:bg-gray-50"
+                    }`}
                 >
                   <td className="p-3">{model.exerciseTitle}</td>
                   <td className="p-3">
                     {model.pdfUrl ? (
                       <button
-                        onClick={() => {
-                          setSelectedPdf(model);
-                          setShowPdfViewer(true);
-                        }}
+                        onClick={() => openPdfViewer(model)}
                         className="text-blue-500 hover:underline"
                       >
                         Voir
@@ -213,11 +224,10 @@ export default function CorrectionModelsPage() {
                   </td>
                   <td className="p-3">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        model.status === "Actif"
+                      className={`px-2 py-1 rounded-full text-xs ${model.status === "Actif"
                           ? "bg-green-100 text-green-800"
                           : "bg-yellow-100 text-yellow-800"
-                      }`}
+                        }`}
                     >
                       {model.status}
                     </span>
@@ -226,10 +236,7 @@ export default function CorrectionModelsPage() {
                   <td className="p-3 text-right">
                     <div className="flex justify-end items-center gap-2 flex-wrap">
                       <button
-                        onClick={() => {
-                          setSelectedPdf(model);
-                          setShowPdfViewer(true);
-                        }}
+                        onClick={() => openSujetViewer(model)}  // <-- ouvrir le sujet
                         className="p-2 text-blue-400 rounded-full"
                       >
                         <Eye size={18} />
@@ -251,7 +258,7 @@ export default function CorrectionModelsPage() {
                       </button>
                       {model.status === "Actif" && (
                         <button
-                            onClick={() => handleAutoCorrectClick(model.id)}
+                          onClick={() => handleAutoCorrectClick(model.id)}
                           className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded"
                         >
                           Corriger tout
@@ -261,7 +268,6 @@ export default function CorrectionModelsPage() {
                   </td>
                 </tr>
               ))}
-
               {models.length === 0 && (
                 <tr>
                   <td colSpan="5" className="p-3 text-center text-gray-500">
@@ -273,23 +279,19 @@ export default function CorrectionModelsPage() {
           </table>
         </div>
       </div>
-      <ConfirmDialog
-       open={confirm.open}
-      title="Lancer la correction automatique ?"
-      message="Voulez‑vous lancer la correction automatique via DeepSeek pour toutes les soumissions de cet exercice ?"
-       onCancel={() => setConfirm({ open: false, sujetId: null })}
-       onConfirm={handleAutoCorrectConfirm}
-       darkMode={darkMode}
-     />
 
-      {/* Modal Add/Edit */}
+      <ConfirmDialog
+        open={confirm.open}
+        title="Lancer la correction automatique ?"
+        message="Voulez‑vous lancer la correction automatique via DeepSeek pour toutes les soumissions de cet exercice ?"
+        onCancel={() => setConfirm({ open: false, sujetId: null })}
+        onConfirm={handleAutoCorrectConfirm}
+        darkMode={darkMode}
+      />
+
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            className={`${
-              darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
-            } rounded-xl p-6 w-full max-w-3xl transition-colors duration-300`}
-          >
+          <div className={`${darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"} rounded-xl p-6 w-full max-w-3xl transition-colors duration-300`}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">
                 {selectedExercise
@@ -310,24 +312,19 @@ export default function CorrectionModelsPage() {
         </div>
       )}
 
-      {/* Modal PDF Viewer */}
       {showPdfViewer && selectedPdf && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div
-            className={`${
-              darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"
-            } rounded-xl p-6 w-full max-w-5xl h-4/5 transition-colors duration-300`}
-          >
+          <div className={`${darkMode ? "bg-gray-800 text-gray-100" : "bg-white text-gray-900"} rounded-xl p-6 w-full max-w-5xl h-4/5 transition-colors duration-300`}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{selectedPdf.exerciseTitle}</h2>
-              <button onClick={() => setShowPdfViewer(false)}>
+              <h2 className="text-xl font-semibold">{selectedPdf.title}</h2>
+              <button onClick={closePdfViewer}>
                 <X size={24} />
               </button>
             </div>
             <iframe
-              src={`${API_BASE}${selectedPdf.pdfUrl}`}
+              src={selectedPdf.url}
               className="w-full h-full rounded"
-              title={selectedPdf.exerciseTitle}
+              title={selectedPdf.title}
             />
           </div>
         </div>

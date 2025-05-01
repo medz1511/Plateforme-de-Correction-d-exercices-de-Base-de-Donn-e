@@ -83,25 +83,24 @@ const ViewRapportEtudiant = () => {
 
   const handleDownloadSubject = async (sujet) => {
     try {
-      console.log("Téléchargement sujet:", sujet);
-
-      const response = await axiosInstance.get(`/sujets/${sujet.id}/signed-url`);
-      const downloadUrl = response.data.url;
-      console.log("URL de téléchargement:", downloadUrl);
-
-      // Crée un lien temporaire et clique dessus
+      const response = await axiosInstance.get(`/sujets/${sujet.id}/download`, {
+        responseType: 'blob'
+      });
+  
+      const blobUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', `${sujet.titre}.pdf`);
+      link.href = blobUrl;
+      link.download = `${sujet.titre.replace(/\s+/g, '_')}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-    } catch (err) {
-      console.error("❌ Erreur téléchargement sujet :", err);
-      alert("Erreur lors du téléchargement du fichier sujet.");
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Erreur lors du téléchargement du sujet :", error);
+      alert("Échec du téléchargement du sujet.");
     }
   };
+  
 
 
 

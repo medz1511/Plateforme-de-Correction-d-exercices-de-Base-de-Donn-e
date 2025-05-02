@@ -1,27 +1,35 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  submission-service:
-    build: ./backend/submission-service
-    ports:
-      - "3002:3002"
-    environment:
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=ndiaye
-      - MYSQL_PASSWORD=ndiaye111
-      - MYSQL_DATABASE=plateforme_evaluation_db
-    depends_on:
-      - mysql
-
-  mysql:
+  db:
     image: mysql:8.0
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ndiaye111
+      MYSQL_ROOT_PASSWORD: 
       MYSQL_DATABASE: plateforme_evaluation_db
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3000"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=plateforme_evaluation_db
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:4173"
+    depends_on:
+      - backend
 
 volumes:
-  mysql_data:
+  mysql-data:

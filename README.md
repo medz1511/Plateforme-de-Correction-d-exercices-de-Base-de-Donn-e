@@ -176,11 +176,16 @@ Les fonctionnalités suivantes ont été **testées et validées** :
 ## 📌 **Auteur**
 
 Développé par :
+
 [Mouhamed Amar](https://github.com/mouhamedamar141) 
+
 [Mohamed Mbaye](https://github.com/mhxii) 
+
 [Sokhna Diarra Ndiaye](https://github.com/diarra004) 
-[Babacar Ndiye](https://github.com/ndiaye47) 
-[Mouhamed Amar](https://github.com/medz1511) 
+
+[Babacar Ndiaye](https://github.com/ndiaye47) 
+
+[Mohamed Sall](https://github.com/medz1511) 
 
 
 avec ❤️  

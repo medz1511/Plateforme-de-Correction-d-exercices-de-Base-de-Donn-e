@@ -27,6 +27,31 @@ router.get('/:id/signed-url', async (req, res) => {
   }
 });
 
+// GET /api/sujets/:id/download -> Téléchargement direct du sujet depuis S3
+router.get('/:id/download', async (req, res) => {
+  try {
+    const sujet = await svc.getById(req.params.id);
+    if (!sujet || !sujet.chemin_fichier_pdf) {
+      return res.status(404).json({ error: "Sujet introuvable ou fichier manquant." });
+    }
+
+    const key = sujet.chemin_fichier_pdf.replace(/^\/?uploads\//, '');
+    const stream = await fileStorage.getFileStream(key);
+
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(sujet.titre)}.pdf"`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error('❌ Erreur GET /sujets/:id/download:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+
 // GET /api/sujets/:id/model-signed-url -> Génère la signed URL du modèle de correction
 router.get('/:id/model-signed-url', async (req, res) => {
   try {

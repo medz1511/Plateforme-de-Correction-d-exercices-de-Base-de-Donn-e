@@ -2,6 +2,7 @@ const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/clien
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { Readable } = require('stream');
 const fetch = require('node-fetch'); // utile si tu veux lire des fichiers en stream
+const streamToBuffer = require('stream-to-buffer');
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -42,5 +43,24 @@ module.exports = {
 
     const response = await s3.send(command);
     return response.Body; // Body est déjà un stream dans le SDK v3
-  }
+  },
+
+
+  downloadFileBuffer: async function (fileKey) {
+  const command = new GetObjectCommand({
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileKey
+  });
+
+  const response = await s3.send(command);
+  const stream = response.Body;
+
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    stream.on('data', chunk => chunks.push(chunk));
+    stream.on('end', () => resolve(Buffer.concat(chunks)));
+    stream.on('error', reject);
+  });
+}
+
 };

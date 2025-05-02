@@ -18,10 +18,6 @@ const CorrectionModelForm = ({ exercise, onSubmit, onClose, darkMode }) => {
   const handleFileChange = e => {
     const f = e.target.files[0];
     if (f) {
-      if (f.type !== 'application/pdf') {
-        setError('Veuillez sélectionner un fichier PDF.');
-        return;
-      }
       setError('');
       setFile(f);
     }
@@ -52,7 +48,6 @@ const CorrectionModelForm = ({ exercise, onSubmit, onClose, darkMode }) => {
         </label>
         <input
           type="file"
-          accept="application/pdf"
           onChange={handleFileChange}
           className={`block w-full text-sm
             file:mr-4 file:py-2 file:px-4

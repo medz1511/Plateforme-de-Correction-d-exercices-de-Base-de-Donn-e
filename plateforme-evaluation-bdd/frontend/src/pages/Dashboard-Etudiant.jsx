@@ -1,4 +1,5 @@
 // src/pages/dashboard-etudiant.jsx
+const user = JSON.parse(localStorage.getItem("user"));
 import React, { useState, useEffect } from "react";
 import { BarChart2, FileText, Users, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -22,7 +23,6 @@ import {
   Line,
 } from "recharts";
 
-const user = JSON.parse(localStorage.getItem("user"));
 
 const Visualisation = () => {
   const { darkMode } = useTheme();

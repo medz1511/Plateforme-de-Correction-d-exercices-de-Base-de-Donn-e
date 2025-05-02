@@ -51,63 +51,73 @@ Une application web full-stack permettant aux professeurs de publier des sujets 
 
 1. **Cloner le dépôt** :
    git clone https://github.com/votre-utilisateur/plateforme-evaluation-bdd.git
+   
    cd plateforme-evaluation-bdd
-2. **Configurer la base de données MySQL**
-3. **Backend**:
-    cd backend
-    npm install
-    npm run sync  # Synchronisation des modèles Sequelize
-    npm start
+   
+3. **Configurer la base de données MySQL**
+   
+5. **Backend**:
+   
+         cd backend
+   
+         npm install
+   
+         npm run sync  # Synchronisation des modèles Sequelize
+
+         npm start
+   
 4.**Frontend**
+
      npm install
+     
      npm run dev
 
 ## 🔐 Fichier .env (à placer dans /backend/.env)
 ⚠️ Ne jamais exposer ce fichier en public !
 
-  ## === Google OAuth2 ===
-### Identifiant client Google pour l'authentification OAuth2
-GOOGLE_CLIENT_ID=your_google_client_id
-### Secret client Google pour OAuth2
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-### URL de redirection après authentification Google
-GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
-### URL du frontend de l'application (pour les CORS, redirections, etc.)
-FRONTEND_URL=http://localhost:5173
-
-## === GitHub OAuth2 ===
-### Identifiant client GitHub pour l'authentification OAuth2
-GITHUB_CLIENT_ID=your_github_client_id
-### Secret client GitHub pour OAuth2
-GITHUB_CLIENT_SECRET=your_github_client_secret
-### URL de redirection après authentification GitHub
-GITHUB_CALLBACK_URL=http://localhost:3001/auth/github/callback
-
-## === Authentification interne ===
-### Clé secrète pour les sessions (utilisée pour signer les cookies de session)
-SESSION_SECRET=your_session_secret
-### Clé secrète pour signer/valider les JSON Web Tokens (JWT)
-JWT_SECRET=your_jwt_secret
-
-## === AWS S3 ===
-### Identifiant d'accès AWS (clé publique)
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-### Clé secrète d'accès AWS
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-### Région AWS (exemple : eu-west-3, us-east-1, etc.)
-AWS_REGION=your_aws_region
-### Nom du bucket S3 utilisé pour stocker les fichiers
-S3_BUCKET_NAME=your_s3_bucket_name
-
-## === DeepSeek (IA) ===
-### Nom du modèle DeepSeek utilisé (peut inclure version ou tag docker)
-DEEPSEEK_MODEL=deepseek-coder:latest
-
-## === Email notifications (SMTP) ===
-### Adresse email utilisée pour envoyer les notifications
-EMAIL_USER=your_email_user
-### Mot de passe ou app password associé à l'email (généralement un mot de passe d'application, pas le vrai mot de passe de la boîte mail)
-EMAIL_PASS=your_email_app_password
+        ## === Google OAuth2 ===
+      ### Identifiant client Google pour l'authentification OAuth2
+      GOOGLE_CLIENT_ID=your_google_client_id
+      ### Secret client Google pour OAuth2
+      GOOGLE_CLIENT_SECRET=your_google_client_secret
+      ### URL de redirection après authentification Google
+      GOOGLE_REDIRECT_URI=http://localhost:3001/auth/google/callback
+      ### URL du frontend de l'application (pour les CORS, redirections, etc.)
+      FRONTEND_URL=http://localhost:5173
+      
+      ## === GitHub OAuth2 ===
+      ### Identifiant client GitHub pour l'authentification OAuth2
+      GITHUB_CLIENT_ID=your_github_client_id
+      ### Secret client GitHub pour OAuth2
+      GITHUB_CLIENT_SECRET=your_github_client_secret
+      ### URL de redirection après authentification GitHub
+      GITHUB_CALLBACK_URL=http://localhost:3001/auth/github/callback
+      
+      ## === Authentification interne ===
+      ### Clé secrète pour les sessions (utilisée pour signer les cookies de session)
+      SESSION_SECRET=your_session_secret
+      ### Clé secrète pour signer/valider les JSON Web Tokens (JWT)
+      JWT_SECRET=your_jwt_secret
+      
+      ## === AWS S3 ===
+      ### Identifiant d'accès AWS (clé publique)
+      AWS_ACCESS_KEY_ID=your_aws_access_key_id
+      ### Clé secrète d'accès AWS
+      AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
+      ### Région AWS (exemple : eu-west-3, us-east-1, etc.)
+      AWS_REGION=your_aws_region
+      ### Nom du bucket S3 utilisé pour stocker les fichiers
+      S3_BUCKET_NAME=your_s3_bucket_name
+      
+      ## === DeepSeek (IA) ===
+      ### Nom du modèle DeepSeek utilisé (peut inclure version ou tag docker)
+      DEEPSEEK_MODEL=deepseek-coder:latest
+      
+      ## === Email notifications (SMTP) ===
+      ### Adresse email utilisée pour envoyer les notifications
+      EMAIL_USER=your_email_user
+      ### Mot de passe ou app password associé à l'email (généralement un mot de passe d'application, pas le vrai mot de passe de la boîte mail)
+      EMAIL_PASS=your_email_app_password
 
 ----
 ---

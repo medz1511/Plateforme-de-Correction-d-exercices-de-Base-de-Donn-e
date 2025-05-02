@@ -22,6 +22,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/soumissions/download?path=<path>
+router.get('/download', async (req, res) => {
+  try {
+    const { path } = req.query;
+    if (!path) {
+      return res.status(400).json({ error: "Paramètre 'path' manquant" });
+    }
+
+    const key = path.replace(/^\/?uploads\//, '');
+    const stream = await fileStorage.getFileStream(key);
+
+    const filename = key.split('/').pop();
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error('❌ Erreur GET /soumissions/download:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/soumissions -> nouvelle soumission avec upload S3
 router.post('/', uploadSoumission.single('file'), async (req, res) => {
   try {

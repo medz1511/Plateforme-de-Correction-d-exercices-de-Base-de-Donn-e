@@ -3,21 +3,21 @@
     "username": "root",
     "password": "",
     "database": "plateforme_evaluation_db",
-    "host": "127.0.0.1",
+    "host": "db",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "",
     "database": "plateforme_evaluation_db",
-    "host": "127.0.0.1",
+    "host": "db",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "",
     "database": "plateforme_evaluation_db",
-    "host": "127.0.0.1",
+    "host": "db",
     "dialect": "mysql"
   }
 }

@@ -7,6 +7,7 @@ export default defineConfig({
   base: '/',
   plugins: [react()],
   server: {
+    port: 5173,
     proxy: {
       // redirige /api vers http://localhost:3001
       '/api': {

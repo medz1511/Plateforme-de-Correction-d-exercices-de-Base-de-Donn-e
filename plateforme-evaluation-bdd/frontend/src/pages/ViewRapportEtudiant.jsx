@@ -50,7 +50,7 @@ const ViewRapportEtudiant = () => {
           email: r.utilisateur.email,
           dateRemise: new Date(r.date_soumission).toLocaleDateString('fr-FR'),
           statut: r.etat === 'CORRIGE' ? 'Corrigé' : 'En attente',
-          note: r.note_automatique != null ? `${r.note_automatique}/20` : '-',
+          note: r.note_final != null ? `${r.note_final}/20` : '-',
           commentaires: r.commentaire_ia ? 1 : 0,
           chemin_fichier_pdf: r.chemin_fichier_pdf
         }));

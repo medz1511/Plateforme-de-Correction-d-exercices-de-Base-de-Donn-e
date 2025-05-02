@@ -10,9 +10,9 @@ async function getOverview() {
 
   // Moyenne générale (note_automatique)
   const [[{ avgNote }]] = await db.sequelize.query(
-    `SELECT AVG(note_automatique) AS avgNote
+    `SELECT AVG(note_final) AS avgNote
      FROM soumissions
-     WHERE note_automatique IS NOT NULL`
+     WHERE note_final IS NOT NULL`
   );
 
   // Nombre de cours actifs (sujets publiés)

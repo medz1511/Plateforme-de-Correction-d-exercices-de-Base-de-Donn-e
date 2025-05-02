@@ -26,7 +26,6 @@ const user = JSON.parse(localStorage.getItem("user"));
 
 const Visualisation = () => {
   const { darkMode } = useTheme();
-  const { id = user.id } = useParams();
   const [soumissions, setSoumissions] = useState([]);
   const [error, setError] = useState(null);
 

@@ -17,7 +17,7 @@ async function getExercisePerformance() {
       s.id                    AS exerciceId,
       s.titre                 AS name,
       COALESCE(ROUND(AVG(so.note_automatique),1), 0) AS aiAvg,
-      COALESCE(ROUND(AVG(so.note_automatique),1), 0) AS profAvg,
+      COALESCE(ROUND(AVG(so.note_final),1), 0) AS profAvg,
       COALESCE(ROUND( COUNT(so.id) * 100.0 / :totalStudents , 0), 0) AS completion,
       0 AS timeAvg  -- placeholder, à remplacer si vous avez un champ timeAvg
     FROM sujets s

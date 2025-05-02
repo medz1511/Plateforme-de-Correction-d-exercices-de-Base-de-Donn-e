@@ -8,6 +8,7 @@ import StatCard from "../components/common/StatCard";
 import { useTheme } from "../context/ThemeContext";
 import ClickableText from "../context/ClickableText";
 import API from "../services/api";
+import { fetchSoumissionsByEtu } from "../services/soumissionService";
 
 import {
   BarChart,
@@ -21,25 +22,28 @@ import {
   Line,
 } from "recharts";
 
+const user = JSON.parse(localStorage.getItem("user"));
+
 const Visualisation = () => {
   const { darkMode } = useTheme();
-  const { id: etudiantId } = useParams();
+  const { id = user.id } = useParams();
   const [soumissions, setSoumissions] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await API.get('/soumissions', { params: { etudiantId } });
-        console.log('soumissions raw:', response.data);
+        const response = await fetchSoumissionsByEtu(user.id);
+        console.log('soumissions fetched:', response.data);
         setSoumissions(response.data);
       } catch (err) {
-        console.error('Erreur chargement soumissions:', err.response?.status, err.response?.data || err.message);
-        setError(err.response?.data || err.message);
+        console.error('Erreur chargement soumissions:', err.message);
+        setError(err.message);
       }
     };
-    if (etudiantId) load();
-  }, [etudiantId]);
+    if (user.id) load();
+  }, [user.id]);
+  console.log(soumissions);
 
   // Statistiques de soumissions
   const totalSoumis = soumissions.length;
